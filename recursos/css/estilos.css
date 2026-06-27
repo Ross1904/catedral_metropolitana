@@ -709,3 +709,39 @@ body {
     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
+
+/* BOTÓN DE CONTRASEÑA (Arreglado y Global) */
+.contenedor-clave, 
+.contenedor-password {
+    position: relative;
+    width: 100%;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.contenedor-clave input, 
+.contenedor-password input {
+    width: 100%;
+    margin-bottom: 0 !important;
+    padding-right: 45px !important; /* Deja un espacio en blanco a la derecha para que el texto no pise el ojito */
+}
+
+.icono-ver-clave, 
+.icono-ver-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%); /* Esto centra el ojito perfectamente en vertical */
+    cursor: pointer;
+    color: #888888;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    transition: color 0.3s ease, opacity 0.3s ease;
+    z-index: 10;
+}
+
+.icono-ver-clave:hover, 
+.icono-ver-password:hover {
+    opacity: 1;
+    color: var(--acento-dorado);
+}

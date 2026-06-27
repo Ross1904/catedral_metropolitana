@@ -177,10 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
                 $pdo->beginTransaction();
 
                 //LOGICA NIVEL DE USUARIO
-                $stmtCount = $pdo->query("SELECT COUNT(id) FROM usuarios");
-                $totalUsuarios = $stmtCount->fetchColumn();
+                $stmtCount = $pdo->query("SELECT COUNT(id) FROM usuarios WHERE id_rol = 3");
+                $totalAdministradores = $stmtCount->fetchColumn();
                 
-                $rolAsignado = ($totalUsuarios == 0) ? 3 : 1;
+                $rolAsignado = ($totalAdministradores == 0) ? 3 : 1;
 
                 $passHash = password_hash($pass, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, usuario, clave, id_rol) VALUES (?, ?, ?, ?)");
@@ -727,15 +727,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
 
     if ($_POST['accion'] === 'exportar-db-servidor') {
         try {
+            // VERIFICACIÓN DE CONTRASEÑA
+            $idUsr = $_SESSION['usuario_id'];
+            $passActual = $_POST['clave-admin'] ?? '';
+            $stmt = $pdo->prepare("SELECT clave FROM usuarios WHERE id = ?");
+            $stmt->execute([$idUsr]);
+            $usrData = $stmt->fetch();
+            if (!$usrData || !password_verify($passActual, $usrData['clave'])) {
+                throw new Exception("Contraseña incorrecta. Acción denegada.");
+            }
+
             $directorio = '../Respaldos/';
             if (!file_exists($directorio)) {
                 mkdir($directorio, 0777, true);
+            }
+
+            // LIMITE DE 10 RESPALDOS
+            $archivos = glob($directorio . "*.sql");
+            if (count($archivos) >= 10) {
+                throw new Exception("Límite alcanzado: Ya existen 10 respaldos. Por favor, elimine uno antiguo antes de crear uno nuevo.");
             }
 
             $fecha = date('Y-m-d_H-i-s');
             $nombreArchivo = "catedral_respaldo_{$fecha}.sql";
             $rutaCompleta = $directorio . $nombreArchivo;
 
+            // GENERACIÓN REAL DEL ARCHIVO SQL
             $tablas = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
             $sql = "SET FOREIGN_KEY_CHECKS=0;\n\n";
             
@@ -753,17 +770,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             }
             $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
 
+            // Guardamos el archivo físicamente en la carpeta
             file_put_contents($rutaCompleta, $sql);
 
-            $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion) VALUES (?, 'Sistema', 'Creó un respaldo automático en la bóveda del servidor')");
+            // Registramos la acción en el historial
+            $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion) VALUES (?, 'Sistema', 'Creó un nuevo respaldo en la bóveda del servidor')");
             $stmtAct->execute([$_SESSION['usuario_id']]);
 
             $_SESSION['alerta_tipo'] = 'exito';
-            $_SESSION['alerta_mensaje'] = "Copia de seguridad generada y guardada en el servidor exitosamente.";
-            
+            $_SESSION['alerta_mensaje'] = "Respaldo creado y guardado exitosamente.";
+
         } catch (Exception $e) {
             $_SESSION['alerta_tipo'] = 'error';
-            $_SESSION['alerta_mensaje'] = "Error al crear el respaldo: " . $e->getMessage();
+            $_SESSION['alerta_mensaje'] = $e->getMessage();
         }
         
         $_SESSION['modulo_activo'] = 'mod-perfil';
@@ -814,24 +833,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     /* ELIMINAR RESPALDO DE LA BÓVEDA */
   
     if ($_POST['accion'] === 'eliminar-db-servidor') {
-        $archivoSeleccionado = $_POST['archivo-respaldo'] ?? '';
-        $rutaCompleta = '../Respaldos/' . basename($archivoSeleccionado);
-
-        if (!empty($archivoSeleccionado) && file_exists($rutaCompleta)) {
-            if (unlink($rutaCompleta)) {
-                
-                $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion) VALUES (?, 'Sistema', 'Eliminó un archivo de respaldo del servidor')");
-                $stmtAct->execute([$_SESSION['usuario_id']]);
-
-                $_SESSION['alerta_tipo'] = 'exito';
-                $_SESSION['alerta_mensaje'] = 'El archivo de respaldo fue eliminado correctamente para liberar espacio.';
-            } else {
-                $_SESSION['alerta_tipo'] = 'error';
-                $_SESSION['alerta_mensaje'] = 'Hubo un problema de permisos al intentar eliminar el archivo.';
+        try {
+            // VERIFICACIÓN DE CONTRASEÑA
+            $idUsr = $_SESSION['usuario_id'];
+            $passActual = $_POST['clave-admin'] ?? '';
+            $stmt = $pdo->prepare("SELECT clave FROM usuarios WHERE id = ?");
+            $stmt->execute([$idUsr]);
+            $usrData = $stmt->fetch();
+            if (!$usrData || !password_verify($passActual, $usrData['clave'])) {
+                throw new Exception("Contraseña incorrecta. Acción de eliminación denegada.");
             }
-        } else {
+
+            // LIMPIEZA DEL NOMBRE DEL ARCHIVO
+            $archivoSeleccionado = trim($_POST['archivo-respaldo'] ?? '');
+            
+            // Validar que el nombre no llegue vacío
+            if (empty($archivoSeleccionado) || $archivoSeleccionado === '.' || $archivoSeleccionado === '..') {
+                throw new Exception('El nombre del archivo llegó vacío. Verifica el botón de la papelera.');
+            }
+
+            $rutaCompleta = '../Respaldos/' . basename($archivoSeleccionado);
+
+            if (file_exists($rutaCompleta)) {
+                // TRUCO PARA WINDOWS/XAMPP: Forzar permisos de lectura/escritura antes de borrar
+                @chmod($rutaCompleta, 0777);
+                
+                if (@unlink($rutaCompleta)) {
+                    $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion) VALUES (?, 'Sistema', 'Eliminó un archivo de respaldo del servidor')");
+                    $stmtAct->execute([$_SESSION['usuario_id']]);
+
+                    $_SESSION['alerta_tipo'] = 'exito';
+                    $_SESSION['alerta_mensaje'] = 'El archivo de respaldo fue eliminado correctamente para liberar espacio.';
+                } else {
+                    throw new Exception('Windows bloqueó el borrado de: ' . basename($archivoSeleccionado));
+                }
+            } else {
+                throw new Exception('No se encontró el archivo: ' . basename($archivoSeleccionado));
+            }
+        } catch (Exception $e) {
             $_SESSION['alerta_tipo'] = 'error';
-            $_SESSION['alerta_mensaje'] = 'No se encontró el archivo a eliminar.';
+            $_SESSION['alerta_mensaje'] = $e->getMessage();
         }
 
         $_SESSION['modulo_activo'] = 'mod-perfil';
@@ -851,26 +892,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
         $rol = $_POST['usuario-rol'];
 
         try {
+            $stmtVerificar = $pdo->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
+            $stmtVerificar->execute([$id]);
+            $datosDestino = $stmtVerificar->fetch();
+
+            if ($datosDestino && $datosDestino['id_rol'] == 3 && $id != $_SESSION['usuario_id']) {
+                throw new Exception("Alerta de Seguridad: No tienes permitido modificar el nombre, usuario ni permisos de otro Administrador.");
+            }
  
             $stmtCheck = $pdo->prepare("SELECT id FROM usuarios WHERE usuario = ? AND id != ?");
             $stmtCheck->execute([$usuario, $id]);
             
             if ($stmtCheck->rowCount() > 0) {
-                $_SESSION['alerta_tipo'] = 'error';
-                $_SESSION['alerta_mensaje'] = 'El nombre de usuario de acceso ya pertenece a otra cuenta.';
+                throw new Exception("El nombre de usuario de acceso ya pertenece a otra cuenta.");
             } else {
                 $stmt = $pdo->prepare("UPDATE usuarios SET nombre = ?, usuario = ?, id_rol = ? WHERE id = ?");
                 $stmt->execute([$nombre, $usuario, $rol, $id]);
 
-                $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion, fecha_accion) VALUES (?, 'Usuarios', CONCAT('Modificó el perfil y nivel de acceso del usuario: ', ?), NOW())");
+                if ($id == $_SESSION['usuario_id']) {
+                    $_SESSION['usuario_rol'] = $rol;
+                    
+                    if (isset($_SESSION['usuario_nombre'])) $_SESSION['usuario_nombre'] = $nombre;
+                    if (isset($_SESSION['id_rol'])) $_SESSION['id_rol'] = $rol;
+                }
+                $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion, fecha_accion) VALUES (?, 'Usuarios', CONCAT('Modificó el perfil del usuario: ', ?), NOW())");
                 $stmtAct->execute([$_SESSION['usuario_id'], $usuario]);
 
                 $_SESSION['alerta_tipo'] = 'exito';
                 $_SESSION['alerta_mensaje'] = 'Datos y rol del usuario actualizados correctamente.';
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $_SESSION['alerta_tipo'] = 'error';
-            $_SESSION['alerta_mensaje'] = 'Error al actualizar: ' . $e->getMessage();
+            $_SESSION['alerta_mensaje'] = $e->getMessage();
         }
         $_SESSION['modulo_activo'] = 'mod-gestion-usuarios';
         header('Location: ../vistas/inicio.php');
@@ -889,6 +942,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             $_SESSION['alerta_mensaje'] = 'Protocolo de seguridad: No puede revocar su propio acceso desde aquí.';
         } else {
             try {
+               
+                $stmtVerificar = $pdo->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
+                $stmtVerificar->execute([$id]);
+                $datosDestino = $stmtVerificar->fetch();
+
+                if ($datosDestino && $datosDestino['id_rol'] == 3) {
+                    throw new Exception("Alerta de Seguridad: No se puede eliminar la cuenta de otro Administrador.");
+                }
+
                 $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
                 $stmt->execute([$id]);
 
@@ -897,9 +959,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
 
                 $_SESSION['alerta_tipo'] = 'exito';
                 $_SESSION['alerta_mensaje'] = 'El acceso del usuario ha sido revocado y su cuenta eliminada.';
-            } catch (PDOException $e) {
+            } catch (Exception $e) {
+                if ($e instanceof PDOException) {
+                    $_SESSION['alerta_mensaje'] = 'No se puede eliminar. El usuario tiene registros o historial atados a él.';
+                } else {
+                    $_SESSION['alerta_mensaje'] = $e->getMessage();
+                }
                 $_SESSION['alerta_tipo'] = 'error';
-                $_SESSION['alerta_mensaje'] = 'No se puede eliminar. El usuario tiene registros o historial atados a él.';
             }
         }
         $_SESSION['modulo_activo'] = 'mod-gestion-usuarios';
@@ -919,15 +985,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
                 $_SESSION['alerta_tipo'] = 'error';
                 $_SESSION['alerta_mensaje'] = 'Protocolo de seguridad: No puede suspender su propia cuenta.';
             } else {
-                $stmt = $pdo->prepare("UPDATE usuarios SET estado = ? WHERE id = ?");
-                $stmt->execute([$nuevoEstado, $id]);
+                try {
+                    // BLINDAJE: Evitar que un Admin suspenda a otro Admin
+                    $stmtVerificar = $pdo->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
+                    $stmtVerificar->execute([$id]);
+                    $datosDestino = $stmtVerificar->fetch();
 
-                $accionLog = ($nuevoEstado === 'Inactivo') ? 'Suspendió el acceso' : 'Restauró el acceso';
-                $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion, fecha_accion) VALUES (?, 'Usuarios', CONCAT(?, ' de un usuario en el sistema.'), NOW())");
-                $stmtAct->execute([$_SESSION['usuario_id'], $accionLog]);
+                    if ($datosDestino && $datosDestino['id_rol'] == 3 && $nuevoEstado === 'Inactivo') {
+                        throw new Exception("Alerta de Seguridad: No tienes permitido suspender la cuenta de otro Administrador.");
+                    }
 
-                $_SESSION['alerta_tipo'] = 'exito';
-                $_SESSION['alerta_mensaje'] = "La cuenta del usuario ahora está $nuevoEstado.";
+                    $stmt = $pdo->prepare("UPDATE usuarios SET estado = ? WHERE id = ?");
+                    $stmt->execute([$nuevoEstado, $id]);
+
+                    $accionLog = ($nuevoEstado === 'Inactivo') ? 'Suspendió el acceso' : 'Restauró el acceso';
+                    $stmtAct = $pdo->prepare("INSERT INTO registro_actividad (id_usuario, modulo, accion, fecha_accion) VALUES (?, 'Usuarios', CONCAT(?, ' de un usuario en el sistema.'), NOW())");
+                    $stmtAct->execute([$_SESSION['usuario_id'], $accionLog]);
+
+                    $_SESSION['alerta_tipo'] = 'exito';
+                    $_SESSION['alerta_mensaje'] = "La cuenta del usuario ahora está $nuevoEstado.";
+                } catch (Exception $e) {
+                    $_SESSION['alerta_tipo'] = 'error';
+                    $_SESSION['alerta_mensaje'] = $e->getMessage();
+                }
             }
             $_SESSION['modulo_activo'] = 'mod-gestion-usuarios';
             header('Location: ../vistas/inicio.php');

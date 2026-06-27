@@ -1064,10 +1064,36 @@ try {
     <?php endif; ?>
 
     <section id="mod-perfil" class="modulo">
-        <div class="encabezado-modulo">
-            <h2><i class="fas fa-cogs"></i> Ajustes del Sistema y Perfil</h2>
-            <p style="margin: 0; opacity: 0.8;">Gestione su cuenta personal, la seguridad y el respaldo del sistema.</p>
+        <div class="encabezado-modulo" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            
+            <div>
+                <h2><i class="fas fa-cogs"></i> Ajustes del Sistema y Perfil</h2>
+                <p style="margin: 0; opacity: 0.8;">Gestione su cuenta personal, la seguridad y el respaldo del sistema.</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <?php if($rolSesion == 3): ?>
+                    <a href="../recursos/manuales/manual_tecnico.pdf" target="_blank" class="boton-sagrado-secundario" style="text-decoration: none !important; padding: 10px 15px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-tools"></i> Manual Técnico
+                    </a>
+                    <a href="../recursos/manuales/manual_administrador.pdf" target="_blank" class="boton-sagrado-primario" style="text-decoration: none !important; padding: 10px 15px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-book"></i> Manual Usuario
+                    </a>
+
+                <?php elseif($rolSesion == 2): ?>
+                    <a href="../recursos/manuales/manual_secretario.pdf" target="_blank" class="boton-sagrado-primario" style="text-decoration: none !important; padding: 10px 15px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-book"></i> Manual Usuario
+                    </a>
+
+                <?php else: ?>
+                    <a href="../recursos/manuales/manual_ciudadano.pdf" target="_blank" class="boton-sagrado-primario" style="text-decoration: none !important; padding: 10px 15px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-book"></i> Manual Usuario
+                    </a>
+                <?php endif; ?>
+            </div>
+
         </div>
+
 
         <div class="grid-perfil-botones">
             <div class="tarjeta-boton-perfil" onclick="abrirModal('modal-editar-usuario')">
@@ -1781,10 +1807,10 @@ try {
                             <h4 style="margin-bottom: 5px; font-size: 1.2rem;">Guardar Estado Actual</h4>
                             <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 20px;">Se creará una copia de seguridad y se guardará automáticamente en la bóveda del sistema.</p>
                         </div>
-                        <form method="POST" action="../php/controlador.php" style="margin: 0;">
-                            <input type="hidden" name="accion" value="exportar-db-servidor">
-                            <button type="submit" class="boton-sagrado-primario" style="width: 100%;"><i class="fas fa-cloud-download-alt"></i> Crear Respaldo Ahora</button>
-                        </form>
+                        
+                        <button type="button" class="boton-sagrado-primario" onclick="abrirModal('modal-confirmar-crear-respaldo')">
+    <i class="fas fa-plus"></i> Crear Nuevo Respaldo
+</button>
                     </div>
 
                     <div style="background: rgba(230, 57, 70, 0.12); border: 2px dashed rgba(230, 57, 70, 0.5); padding: 25px; border-radius: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
@@ -1842,25 +1868,28 @@ try {
                         </form>
                         
                         <script>
-                            function eliminarRespaldoSeleccionado() {
-                                const inputHidden = document.getElementById('input-archivo-respaldo-hidden');
-                                const textoDisplay = document.getElementById('texto-respaldo-seleccionado').innerText;
-                                
-                                if (!inputHidden.value) {
-                                    alert('Por favor, seleccione un respaldo de la lista primero.');
-                                    return;
-                                }
-                                
-                                document.getElementById('fecha-eliminar-respaldo-display').innerText = textoDisplay;
-                                
-                                cerrarModal('modal-respaldo-db');
-                                abrirModal('modal-confirmar-eliminar-respaldo');
-                            }
-
-                            function confirmarEliminacionRespaldoReal() {
-                                document.getElementById('accion-respaldo').value = 'eliminar-db-servidor';
-                                document.getElementById('form-gestionar-respaldo').submit();
-                            }
+                           function eliminarRespaldoSeleccionado() {
+    // 1. Obtenemos el archivo que el usuario seleccionó en la lista
+    const inputHidden = document.getElementById('input-archivo-respaldo-hidden');
+    
+    if (!inputHidden.value) {
+        alert('Por favor, seleccione un respaldo de la lista primero.');
+        return;
+    }
+    
+    // 2. Le pasamos ese archivo exacto a la ventana de la contraseña
+    document.getElementById('input-eliminar-respaldo').value = inputHidden.value;
+    
+    // 3. Limpiamos el campo de la contraseña por seguridad
+    let inputClave = document.getElementById('clave-eliminar-respaldo');
+    if (inputClave) {
+        inputClave.value = '';
+    }
+    
+    // 4. Cerramos el panel y abrimos tu advertencia roja
+    cerrarModal('modal-respaldo-db');
+    abrirModal('modal-confirmar-eliminar-respaldo');
+}
                         </script>
                     </div>
 
@@ -1868,35 +1897,69 @@ try {
         </div>
     </div>
 
-    <div id="modal-confirmar-eliminar-respaldo" class="modal-catedral">
-        <div class="modal-contenido" style="max-width: 400px; text-align: center; border-top: 5px solid var(--acento-rojo);">
-            <div class="modal-cuerpo" style="padding: 30px 20px;">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3.5rem; color: var(--acento-rojo); margin-bottom: 20px;"></i>
+    <div id="modal-confirmar-eliminar-respaldo" class="modal-catedral" style="z-index: 9999;">
+    <div class="modal-contenido" style="max-width: 400px; text-align: center; border-top: 5px solid var(--acento-rojo);">
+        <div class="modal-cuerpo" style="padding: 30px 20px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3.5rem; color: var(--acento-rojo); margin-bottom: 20px;"></i>
+            <h3 class="titulo-advertencia" style="color: var(--texto-principal);">¿Eliminar Respaldo?</h3>
+            <p style="margin-bottom: 15px; font-size: 0.95rem; opacity: 0.8;">
+                Esta acción es irreversible. El archivo será borrado permanentemente del servidor.
+            </p>
+            
+            <form method="POST" action="../php/controlador.php" style="margin: 0; text-align: left;">
+                <input type="hidden" name="accion" value="eliminar-db-servidor">
+                <input type="hidden" name="archivo-respaldo" id="input-eliminar-respaldo">
                 
-                <h3 class="titulo-advertencia">¿Eliminar Respaldo?</h3>
-                
-                <style>
-                    body.oscuro #texto-peligro-respaldo,
-                    body.oscuro #texto-peligro-respaldo small {
-                        color: #ffffff !important;
-                        text-shadow: 0px 1px 3px rgba(0,0,0,0.8) !important;
-                    }
-                </style>
-                
-                <p id="texto-peligro-respaldo" style="margin-bottom: 25px; line-height: 1.5;">
-                    ¿Está seguro de que desea eliminar permanentemente el respaldo del <br>
-                    <strong id="fecha-eliminar-respaldo-display" style="font-size: 1.1rem; color: var(--acento-rojo); display: block; margin-top: 5px;"></strong> <br>
-                    <small style="opacity: 0.8; display: block; margin-top: 5px;">Esta acción liberará espacio en el servidor, pero es irreversible.</small>
-                </p>
-
-                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 25px;">
-                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-confirmar-eliminar-respaldo'); abrirModal('modal-respaldo-db');">Cancelar</button>
-                    
-                    <button type="button" class="boton-sagrado-primario" onclick="confirmarEliminacionRespaldoReal()" style="background: linear-gradient(135deg, var(--acento-rojo), #521818); box-shadow: 0 4px 10px rgba(122, 40, 40, 0.3); border-color: transparent;"><i class="fas fa-trash-alt"></i> Sí, Eliminar</button>
+                <div class="grupo-entrada" style="margin-bottom: 20px;">
+                    <label for="clave-eliminar-respaldo" style="font-size: 0.9rem; font-weight: bold; color: var(--texto-principal);">
+                        <i class="fas fa-lock"></i> Contraseña de Administrador:
+                    </label>
+                    <div class="contenedor-clave">
+                        <input type="password" name="clave-admin" id="clave-eliminar-respaldo" class="input-estilo-catedral" style="width: 100%;" required placeholder="Escriba su contraseña para confirmar...">
+                        <i class="fas fa-eye icono-ver-clave" onclick="toggleclave('clave-eliminar-respaldo', this)" title="Mostrar contraseña"></i>
+                    </div>
                 </div>
-            </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-confirmar-eliminar-respaldo')">Cancelar</button>
+                    <button type="submit" class="boton-sagrado-primario" style="background: var(--acento-rojo); border-color: var(--acento-rojo);">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+
+<div id="modal-confirmar-crear-respaldo" class="modal-catedral" style="z-index: 9999;">
+    <div class="modal-contenido" style="max-width: 400px; text-align: center; border-top: 5px solid var(--acento-dorado);">
+        <div class="modal-cuerpo" style="padding: 30px 20px;">
+            <i class="fas fa-database" style="font-size: 3.5rem; color: var(--acento-dorado); margin-bottom: 20px;"></i>
+            <h3>Crear nuevo respaldo</h3>
+            <p style="margin-bottom: 15px; font-size: 0.95rem; opacity: 0.8;">
+                Se creará un nuevo archivo de respaldo. Ingrese su clave para confirmar:
+            </p>
+            
+            <form method="POST" action="../php/controlador.php" style="margin: 0;">
+                <input type="hidden" name="accion" value="exportar-db-servidor">
+                
+                <div class="grupo-entrada" style="margin-bottom: 20px; text-align: left;">
+                    <div class="contenedor-clave">
+                        <input type="password" name="clave-admin" id="clave-crear-nuevo-respaldo" class="input-estilo-catedral" style="width: 100%;" required placeholder="Contraseña de administrador...">
+                        <i class="fas fa-eye icono-ver-clave" onclick="toggleclave('clave-crear-nuevo-respaldo', this)" title="Mostrar contraseña"></i>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-confirmar-crear-respaldo')">Cancelar</button>
+                    <button type="submit" class="boton-sagrado-primario">
+                        <i class="fas fa-plus"></i> Confirmar y Crear
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
     <div id="modal-admin-editar-usuario" class="modal-catedral">
         <div class="modal-contenido">
