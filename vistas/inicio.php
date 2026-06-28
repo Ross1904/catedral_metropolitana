@@ -386,7 +386,7 @@ unset($_SESSION['modulo_activo']);
             <?php endif; ?>
         </div>
         
-        <div class="grid-actividades">
+        <div class="grid-actividades" id="lista-formacion">
             <?php if (empty($listaActividades)): ?>
                 <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: rgba(0,0,0,0.02); border-radius: 8px;">
                     <i class="fas fa-church" style="font-size: 3rem; color: var(--acento-dorado); margin-bottom: 15px; opacity:0.5;"></i>
@@ -394,7 +394,7 @@ unset($_SESSION['modulo_activo']);
                 </div>
             <?php else: ?>
                 <?php foreach($listaActividades as $act): ?>
-                <div class="tarjeta-actividad">
+                <div class="tarjeta-actividad item-formacion">
                     <div class="tarjeta-actividad-cabecera">
                         <h4 class="tarjeta-actividad-titulo"><?php echo htmlspecialchars($act['nombre_actividad']); ?></h4>
                         <span class="etiqueta-categoria"><?php echo htmlspecialchars($act['categoria']); ?></span>
@@ -429,7 +429,22 @@ unset($_SESSION['modulo_activo']);
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+            <?php if(count($listaActividades) > 4): ?>
+    <div style="display: flex; justify-content: center; margin-top: 25px; width: 100%; grid-column: 1 / -1;">
+        <button type="button" id="btn-cargar-mas-formacion" class="boton-sagrado-secundario" style="padding: 10px 25px; border-radius: 20px;">
+            <i class="fas fa-chevron-down"></i> Ver más actividades
+        </button>
+    </div>
+    <?php endif; ?>
         </div>
+
+        <?php if(!empty($listaActividades)): ?>
+        <div style="text-align: center; margin-top: 25px; width: 100%;">
+            <button type="button" id="btn-cargar-mas-formacion" class="boton-sagrado-secundario" style="display: none; padding: 10px 25px; border-radius: 20px;">
+                <i class="fas fa-chevron-down"></i> Ver más actividades
+            </button>
+        </div>
+        <?php endif; ?>
     </section>
 
     <?php if($esSecretario): ?>
@@ -494,7 +509,7 @@ unset($_SESSION['modulo_activo']);
                         $iconoCabecera = 'fas fa-tools';
                     }
                 ?>
-                <div class="tarjeta-ofrenda">
+                <div class="tarjeta-ofrenda item-donacion">
                     <div class="ofrenda-cabecera">
                         <span class="ofrenda-fecha"><i class="far fa-calendar-alt"></i> <?php echo date('d M, Y', strtotime($d['fecha_donacion'])); ?></span>
                         <span class="ofrenda-metodo <?php echo $claseCabecera; ?>"><i class="<?php echo $iconoCabecera; ?>"></i> <?php echo htmlspecialchars($textoCabecera); ?></span>
@@ -547,11 +562,21 @@ unset($_SESSION['modulo_activo']);
                         <button class="boton-accion-tarjeta btn-eliminar" title="Eliminar" onclick="confirmarEliminarDonacion(<?php echo $d['id']; ?>, '<?php echo addslashes(htmlspecialchars($d['donante'])); ?>')"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </section>
+
+        <?php endforeach; ?>
     <?php endif; ?>
+</div>
+
+<?php if(count($donaciones) > 4): ?>
+<div style="text-align: center; margin-top: 25px; width: 100%;">
+    <button type="button" id="btn-cargar-mas-donaciones" class="boton-sagrado-secundario" style="padding: 10px 25px; border-radius: 20px;">
+        <i class="fas fa-chevron-down"></i> Ver más donaciones
+    </button>
+</div>
+<?php endif; ?>
+
+</section>
+<?php endif; ?>
  
     <?php if($esSecretario): ?>
     <section id="mod-archivos" class="modulo">
@@ -1162,7 +1187,7 @@ try {
             <?php endif; ?>
         </div>
         
-        <div class="panel-lateral-cuerpo">
+        <div class="panel-lateral-cuerpo" id="lista-actividades-panel">
             <?php if(empty($historialActividad)): ?>
                 <div style="text-align: center; padding: 30px; opacity: 0.6;">
                     <i class="fas fa-bed" style="font-size: 3rem; margin-bottom: 10px;"></i>
@@ -1203,6 +1228,15 @@ try {
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
+        
+        <?php if(!empty($historialActividad)): ?>
+        <div style="text-align: center; padding: 15px; border-top: 1px solid rgba(198, 156, 109, 0.2);">
+            <button type="button" id="btn-cargar-mas-actividad" class="boton-sagrado-secundario" style="display: none; width: 100%; border-radius: 20px;">
+                <i class="fas fa-chevron-down"></i> Ver más registros
+            </button>
+        </div>
+        <?php endif; ?>
+        
     </div>
     <?php endif; ?>
 
@@ -2707,6 +2741,49 @@ try {
         </div>
     </div>
 
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const itemsPorPagina = 5; // Mostrará de 5 en 5
+        let itemsVisibles = itemsPorPagina;
+        
+        // Buscamos el ID que le acabamos de poner al contenedor
+        const contenedor = document.getElementById('lista-actividades-panel');
+        if (!contenedor) return; 
+        
+        const items = contenedor.getElementsByClassName('item-actividad');
+        const botonCargarMas = document.getElementById('btn-cargar-mas-actividad');
+        
+        if (items.length === 0 || !botonCargarMas) return;
+
+        // Ocultar todos los que pasen de 5
+        for (let i = itemsPorPagina; i < items.length; i++) {
+            items[i].style.display = 'none';
+        }
+
+        // Encender el botón si hay más de 5 en total
+        if (items.length > itemsPorPagina) {
+            botonCargarMas.style.display = 'inline-block';
+        }
+
+        // ¿Qué pasa cuando hacemos clic?
+        botonCargarMas.addEventListener('click', function() {
+            let mostradosEnEsteClic = 0;
+            
+            for (let i = itemsVisibles; i < items.length; i++) {
+                items[i].style.display = 'block'; 
+                mostradosEnEsteClic++;
+                itemsVisibles++;
+                if (mostradosEnEsteClic === itemsPorPagina) break; 
+            }
+
+            // Ocultar botón si ya llegamos al final
+            if (itemsVisibles >= items.length) {
+                botonCargarMas.style.display = 'none';
+            }
+        });
+    });
+    </script>
+
 <div id="modal-easter-egg" class="modal-catedral" style="z-index: 9999;">
         <div class="modal-contenido" style="max-width: 450px; background: #1a1a1a; border: 2px solid var(--acento-dorado); border-radius: 10px;">
             <div class="modal-cabecera" style="border-bottom: 1px dashed var(--acento-dorado); background: #0a0a0a;">
@@ -2786,6 +2863,8 @@ try {
                 window.location.href = '../php/eliminar_documento.php?id=' + window.idActaParaBorrar;
             }
         }
+
+
 
         /* FILTRO DE BÚSQUEDA */
         function filtrarTablaArchivos() {
@@ -2887,6 +2966,8 @@ try {
             
             abrirModal('modal-confirmar-estado');
         }
+
+        
 
          /*EASTER EGG: SALA DE ARCADE*/
         let contadorClicksPerfil = 0, temporizadorClicks = null;
@@ -3275,5 +3356,87 @@ try {
             margin: 0 !important;
         }
     </style>
+
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // Aquí guardaremos las instrucciones para reiniciar cada módulo
+        const funcionesReinicio = [];
+
+        function aplicarCargarMas(idContenedor, claseItem, idBoton, itemsPorClic) {
+            const contenedor = document.getElementById(idContenedor);
+            if (!contenedor) return; 
+
+            const boton = document.getElementById(idBoton);
+            if (!boton) return;
+
+            let itemsVisibles = itemsPorClic;
+
+            // Esta es la magia: Una función que "enrolla" la lista de nuevo
+            function resetearVista() {
+                const items = contenedor.getElementsByClassName(claseItem);
+                if (items.length === 0) return;
+                
+                itemsVisibles = itemsPorClic; // Volvemos al límite inicial
+                
+                // Mostrar solo la primera fila y ocultar el resto
+                for (let i = 0; i < items.length; i++) {
+                    if (i < itemsPorClic) {
+                        items[i].style.display = ''; // Visible
+                    } else {
+                        items[i].style.display = 'none'; // Oculto
+                    }
+                }
+
+                // Encender el botón si hay más elementos que el límite
+                if (items.length > itemsPorClic) {
+                    boton.style.display = 'inline-block';
+                } else {
+                    boton.style.display = 'none';
+                }
+            }
+
+            // 1. Lo ejecutamos por primera vez al cargar la página
+            resetearVista();
+
+            // 2. Lo guardamos en nuestra lista de reinicios
+            funcionesReinicio.push(resetearVista);
+
+            // 3. Qué pasa al hacer clic en "Ver más"
+            boton.addEventListener('click', function() {
+                const items = contenedor.getElementsByClassName(claseItem);
+                let mostradosEnEsteClic = 0;
+                
+                for (let i = itemsVisibles; i < items.length; i++) {
+                    items[i].style.display = ''; 
+                    mostradosEnEsteClic++;
+                    itemsVisibles++;
+                    if (mostradosEnEsteClic === itemsPorClic) break; 
+                }
+
+                if (itemsVisibles >= items.length) {
+                    boton.style.display = 'none';
+                }
+            });
+        }
+
+        // --- APLICAMOS A NUESTROS MÓDULOS (3 tarjetas = 1 fila exacta) ---
+        aplicarCargarMas('lista-formacion', 'item-formacion', 'btn-cargar-mas-formacion', 4);
+        aplicarCargarMas('contenedor-tarjetas-donaciones', 'item-donacion', 'btn-cargar-mas-donaciones', 4);
+        
+        // (Opcional: Si quieres que el historial del panel derecho también funcione, son 5 por fila)
+        aplicarCargarMas('lista-actividades-panel', 'item-actividad', 'btn-cargar-mas-actividad', 5);
+
+        // --- EL TRUCO PARA REINICIAR AL CAMBIAR DE PESTAÑA ---
+        const botonesMenuLateral = document.querySelectorAll('.item-menu');
+        botonesMenuLateral.forEach(botonMenu => {
+            botonMenu.addEventListener('click', function() {
+                // Al hacer clic en cualquier parte del menú, reiniciamos todo en secreto
+                funcionesReinicio.forEach(reset => reset());
+            });
+        });
+
+    });
+    </script>
 </body>
 </html>
