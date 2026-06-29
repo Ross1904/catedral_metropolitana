@@ -194,7 +194,8 @@ try {
     $dompdf->render();
     
     $nombre_descarga = "Matrimonio_" . str_replace(' ', '_', $nombre_esposo) . "_y_" . str_replace(' ', '_', $nombre_esposa) . ".pdf";
-    $dompdf->stream($nombre_descarga, array("Attachment" => false));
+    $descargar = (isset($_GET['descargar']) && $_GET['descargar'] == '1') ? true : false;
+$dompdf->stream($nombre_descarga, array("Attachment" => $descargar));
 
 } catch (Exception $e) {
     if (ob_get_length()) {

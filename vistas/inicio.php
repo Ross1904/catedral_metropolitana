@@ -567,7 +567,7 @@ unset($_SESSION['modulo_activo']);
     <?php endif; ?>
 </div>
 
-<?php if(count($donaciones) > 4): ?>
+<?php if(count($donaciones) > 3): ?>
 <div style="text-align: center; margin-top: 25px; width: 100%;">
     <button type="button" id="btn-cargar-mas-donaciones" class="boton-sagrado-secundario" style="padding: 10px 25px; border-radius: 20px;">
         <i class="fas fa-chevron-down"></i> Ver más donaciones
@@ -617,17 +617,47 @@ unset($_SESSION['modulo_activo']);
                     <h3 id="titulo-tabla-archivos" style="margin: 0; border: none; padding: 0; font-size: 1.5rem; color: var(--acento-dorado);">Registros</h3>
                 </div>
 
-                <div style="position: relative; width: 100%; max-width: 400px; flex-grow: 1;">
-                    <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
-                    <input type="text" id="buscador-archivos" onkeyup="filtrarTablaArchivos()" class="input-estilo-catedral" placeholder="Buscar por nombre, folio, libro..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1; justify-content: flex-end;">
+                    <div style="position: relative; width: 100%; max-width: 400px;">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
+                        <input type="text" id="buscador-archivos" onkeyup="filtrarTablaArchivos()" class="input-estilo-catedral" placeholder="Buscar por nombre, folio, libro..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    </div>
+                    <button class="boton-sagrado-primario" onclick="toggleModoExportacion()" id="btn-modo-exportacion" style="margin: 0; padding: 10px 15px; border-radius: 6px; white-space: nowrap;">
+                        <i class="fas fa-tasks"></i> Selección Múltiple
+                    </button>
                 </div>
                 
+            </div>
+
+            <div id="panel-exportacion" style="display: none; background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px;">
+                    <label for="check-todos" style="font-weight: bold; cursor: pointer; color: var(--texto-principal);">Seleccionar Todos</label>
+                    <span id="contador-seleccionados" style="margin-left: 15px; opacity: 0.8; font-size: 0.9rem;">0 seleccionados</span>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label for="formato-lote-bautismo" style="font-size: 0.9rem; font-weight: bold; color: #555;">Formato Bautismos:</label>
+                        <select id="formato-lote-bautismo" style="border: none; outline: none; background: transparent; font-size: 0.9rem; color: var(--texto-principal);">
+                            <option value="nacional">Nacional</option>
+                            <option value="exterior">Para el Exterior</option>
+                        </select>
+                    </div>
+
+                    <button class="boton-sagrado-primario" onclick="descargarLote()" style="background: #2c3e50; border-color: #1a252f; margin: 0;">
+                        <i class="fas fa-file-download"></i> Descargar Seleccionados
+                    </button>
+                </div>
             </div>
 
             <div class="contenedor-tabla-responsiva">
                 <table id="tabla-registros-archivos" class="tabla-catedral">
                     <thead>
                         <tr>
+                            <th id="th-checkboxes" style="display: none; width: 50px; text-align: center;">
+                                <i class="fas fa-check-square" style="color: var(--acento-dorado); font-size: 1.2rem;"></i>
+                            </th>
                             <th>Nro. Acta</th>
                             <th>Nombre Principal</th>
                             <th>Fecha Sacramento</th>
@@ -655,8 +685,21 @@ try {
 
             $json_seguro = htmlspecialchars($archivo['datos_json'], ENT_QUOTES, 'UTF-8');
             
+            // --- INICIO DEL CÓDIGO NUEVO ---
+
+            $urlDescarga = "";
+            if($tipo === 'Bautismo') {
+                $urlDescarga = "../php/generar_bautismo_pdf.php?id=$idDoc&descargar=1";
+            } elseif($tipo === 'Confirmacion') {
+                $urlDescarga = "../php/generar_confirmacion_pdf.php?id=$idDoc&descargar=1";
+            } elseif($tipo === 'Matrimonio') {
+                $urlDescarga = "../php/generar_matrimonio_pdf.php?id=$idDoc&descargar=1";
+            }
+
             echo "<tr class='fila-archivo' data-tipo='$tipo' style='display: none;'>";
+            echo "<td class='col-check' style='display: none; text-align: center;'><input type='checkbox' class='check-doc' data-url='$urlDescarga' onclick='actualizarContador()' style='transform: scale(1.3); cursor: pointer;'></td>";
             echo "<td><b>$num</b></td>";
+            echo "<td style='text-transform: uppercase;'>$nom</td>";
             echo "<td style='text-transform: uppercase;'>$nom</td>";
             echo "<td>$fec_vista</td>";
             echo "<td>L: $lib | F: $fol</td>";
@@ -2743,7 +2786,7 @@ try {
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const itemsPorPagina = 5; // Mostrará de 5 en 5
+        const itemsPorPagina = 3; // Mostrará de 5 en 5
         let itemsVisibles = itemsPorPagina;
         
         // Buscamos el ID que le acabamos de poner al contenedor
@@ -3421,8 +3464,8 @@ try {
         }
 
         // --- APLICAMOS A NUESTROS MÓDULOS (3 tarjetas = 1 fila exacta) ---
-        aplicarCargarMas('lista-formacion', 'item-formacion', 'btn-cargar-mas-formacion', 4);
-        aplicarCargarMas('contenedor-tarjetas-donaciones', 'item-donacion', 'btn-cargar-mas-donaciones', 4);
+        aplicarCargarMas('lista-formacion', 'item-formacion', 'btn-cargar-mas-formacion', 3);
+        aplicarCargarMas('contenedor-tarjetas-donaciones', 'item-donacion', 'btn-cargar-mas-donaciones', 3);
         
         // (Opcional: Si quieres que el historial del panel derecho también funcione, son 5 por fila)
         aplicarCargarMas('lista-actividades-panel', 'item-actividad', 'btn-cargar-mas-actividad', 5);
@@ -3438,5 +3481,101 @@ try {
 
     });
     </script>
+
+    <script>
+let modoExportacion = false;
+
+function toggleModoExportacion() {
+    modoExportacion = !modoExportacion;
+    const panel = document.getElementById('panel-exportacion');
+    const colsCheck = document.querySelectorAll('.col-check');
+    const thCheck = document.getElementById('th-checkboxes');
+    const btn = document.getElementById('btn-modo-exportacion');
+
+    if (modoExportacion) {
+        panel.style.display = 'flex';
+        
+        colsCheck.forEach(col => col.style.display = 'table-cell');
+        if(thCheck) thCheck.style.display = 'table-cell'; 
+        
+        btn.innerHTML = '<i class="fas fa-times"></i> Cancelar Selección';
+        btn.style.background = 'var(--acento-rojo)';
+        btn.style.borderColor = 'var(--acento-rojo)';
+    } else {
+        panel.style.display = 'none';
+        
+        colsCheck.forEach(col => col.style.display = 'none');
+        if(thCheck) thCheck.style.display = 'none'; 
+        
+        btn.innerHTML = '<i class="fas fa-tasks"></i> Selección Múltiple';
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        document.getElementById('check-todos').checked = false;
+        document.querySelectorAll('.check-doc').forEach(c => c.checked = false);
+        actualizarContador();
+    }
+}
+
+function toggleAllChecks(master) {
+    const checks = document.querySelectorAll('.check-doc');
+    checks.forEach(c => {
+        // Seleccionamos solo los que pertenecen a la carpeta que estás viendo (los que no están ocultos)
+        if (c.closest('tr').style.display !== 'none') {
+            c.checked = master.checked;
+        }
+    });
+    actualizarContador();
+}
+
+function actualizarContador() {
+    const seleccionados = document.querySelectorAll('.check-doc:checked').length;
+    document.getElementById('contador-seleccionados').innerText = seleccionados + ' seleccionados';
+}
+
+async function descargarLote() {
+    const checks = document.querySelectorAll('.check-doc:checked');
+    if (checks.length === 0) {
+        alert("Por favor, seleccione al menos un documento.");
+        return;
+    }
+
+    // Leemos qué formato de bautismo eligió la persona
+    const formatoBautismo = document.getElementById('formato-lote-bautismo').value;
+
+    alert(`Se iniciará la descarga de ${checks.length} documentos.\n\nIMPORTANTE:\n1. Si el navegador muestra un aviso de "Intentando descargar múltiples archivos", dele a "Permitir".\n2. Si configuró su navegador, se guardarán automáticamente en su carpeta de Descargas.\n\nPor favor, espere a que terminen de bajar todos.`);
+
+    for (let i = 0; i < checks.length; i++) {
+        let url = checks[i].getAttribute('data-url');
+        
+        if(url.includes('generar_bautismo_pdf')) {
+            url += '&formato=' + formatoBautismo;
+        }
+        
+        let link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', ''); 
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click(); 
+        document.body.removeChild(link);
+
+        await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    toggleModoExportacion();
+}
+
+// Apagar el modo exportación si el usuario se sale de la carpeta
+document.addEventListener("DOMContentLoaded", function() {
+    const divBotonesCarpetas = document.querySelectorAll('#vista-categorias-archivos .tarjeta-boton-perfil');
+    divBotonesCarpetas.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(modoExportacion) toggleModoExportacion();
+        });
+    });
+});
+</script>
+
 </body>
 </html>
