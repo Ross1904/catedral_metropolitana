@@ -652,14 +652,15 @@ unset($_SESSION['modulo_activo']);
             </div>
 
             <div class="contenedor-tabla-responsiva">
-                <table id="tabla-registros-archivos" class="tabla-catedral">
+                <table id="tabla-registros-archivos" class="tabla-catedral" style="width: 100%;">
                     <thead>
                         <tr>
-                            <th id="th-checkboxes" style="display: none; width: 50px; text-align: center;">
+                            <th id="th-checkboxes" class="col-check" style="display: none; width: 50px; text-align: center;">
                                 <i class="fas fa-check-square" style="color: var(--acento-dorado); font-size: 1.2rem;"></i>
                             </th>
                             <th>Nro. Acta</th>
                             <th>Nombre Principal</th>
+                            <th>Nombre Sacramento</th>
                             <th>Fecha Sacramento</th>
                             <th>Libro/Folio</th>
                             <th style="text-align: center;">Acción</th>
@@ -695,7 +696,6 @@ try {
             } elseif($tipo === 'Matrimonio') {
                 $urlDescarga = "../php/generar_matrimonio_pdf.php?id=$idDoc&descargar=1";
             }
-
             echo "<tr class='fila-archivo' data-tipo='$tipo' style='display: none;'>";
             echo "<td class='col-check' style='display: none; text-align: center;'><input type='checkbox' class='check-doc' data-url='$urlDescarga' onclick='actualizarContador()' style='transform: scale(1.3); cursor: pointer;'></td>";
             echo "<td><b>$num</b></td>";
@@ -3489,14 +3489,15 @@ function toggleModoExportacion() {
     modoExportacion = !modoExportacion;
     const panel = document.getElementById('panel-exportacion');
     const colsCheck = document.querySelectorAll('.col-check');
-    const thCheck = document.getElementById('th-checkboxes');
+    const thCheck = document.getElementById('th-checkboxes'); // Atrapamos la cabecera
     const btn = document.getElementById('btn-modo-exportacion');
 
     if (modoExportacion) {
         panel.style.display = 'flex';
         
-        colsCheck.forEach(col => col.style.display = 'table-cell');
-        if(thCheck) thCheck.style.display = 'table-cell'; 
+        // ¡LA MAGIA AQUÍ! Al dejarlo vacío, respetamos el Flexbox/Grid de tu plantilla
+        colsCheck.forEach(col => col.style.display = '');
+        if (thCheck) thCheck.style.display = ''; 
         
         btn.innerHTML = '<i class="fas fa-times"></i> Cancelar Selección';
         btn.style.background = 'var(--acento-rojo)';
@@ -3504,8 +3505,9 @@ function toggleModoExportacion() {
     } else {
         panel.style.display = 'none';
         
+        // Volvemos a ocultarlos
         colsCheck.forEach(col => col.style.display = 'none');
-        if(thCheck) thCheck.style.display = 'none'; 
+        if (thCheck) thCheck.style.display = 'none'; 
         
         btn.innerHTML = '<i class="fas fa-tasks"></i> Selección Múltiple';
         btn.style.background = '';
