@@ -644,7 +644,7 @@ unset($_SESSION['modulo_activo']);
                 
             </div>
 
-            <div id="panel-exportacion" style="display: none; background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
+            <div id="panel-exportacion" style="background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 0 15px; margin-bottom: 0; gap: 15px; align-items: center; justify-content: space-between; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-8px); transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.4s ease, margin 0.4s ease, transform 0.35s ease;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px;">
                     <label for="check-todos" style="font-weight: bold; cursor: pointer; color: var(--texto-principal);">Seleccionar Todos</label>
@@ -2777,6 +2777,35 @@ try {
         </div>
     </div>
 
+<div id="modal-descarga-lote" class="modal-catedral">
+        <div class="modal-contenido" style="max-width: 420px; text-align: center; border-top: 5px solid var(--acento-dorado);">
+            <div class="modal-cuerpo modal-descarga-cuerpo" style="padding: 30px 25px;">
+                <i id="icono-descarga-lote" class="fas fa-cloud-download-alt" style="font-size: 3.5rem; color: var(--acento-dorado); margin-bottom: 18px; display: block;"></i>
+
+                <h3 id="titulo-descarga-lote" class="texto-modal-descarga" style="margin-top: 0;">Preparando descarga</h3>
+
+                <p id="texto-descarga-lote" class="texto-modal-descarga" style="margin-bottom: 20px; line-height: 1.5; opacity: 0.85; font-size: 0.92rem;">
+                    Se iniciará la descarga de los documentos seleccionados. Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar.
+                </p>
+
+                <div style="background: rgba(198, 156, 109, 0.15); border-radius: 20px; height: 10px; overflow: hidden; margin-bottom: 10px;">
+                    <div id="barra-progreso-descarga" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--acento-dorado), #a87f55); border-radius: 20px; transition: width 0.4s ease;"></div>
+                </div>
+                <p id="contador-progreso-descarga" class="texto-modal-descarga" style="font-size: 0.85rem; opacity: 0.75; margin-bottom: 20px;">0 de 0 documentos</p>
+
+                <div id="zona-botones-descarga-lote" style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote')">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Texto del modal de descarga: hereda correctamente en ambos modos */
+        .texto-modal-descarga { color: var(--texto-claro); }
+        body.oscuro .texto-modal-descarga { color: var(--texto-oscuro); }
+    </style>
+
 <div id="modal-confirmar-eliminar-acta" class="modal-catedral">
         <div class="modal-contenido" style="max-width: 400px; text-align: center; border-top: 5px solid var(--acento-rojo);">
             <div class="modal-cuerpo" style="padding: 30px 20px;">
@@ -3688,8 +3717,25 @@ function toggleModoExportacion() {
     const btn = document.getElementById('btn-modo-exportacion');
 
     if (modoExportacion) {
+        // Preparar el panel para medir su altura real antes de animar
         panel.style.display = 'flex';
-        
+        panel.style.flexWrap = 'wrap';
+        panel.style.maxHeight = 'none';
+        const alturaReal = panel.scrollHeight;
+        panel.style.maxHeight = '0px';
+        void panel.offsetHeight; // forzar reflow
+
+        requestAnimationFrame(() => {
+            panel.style.maxHeight = alturaReal + 'px';
+            panel.style.opacity = '1';
+            panel.style.padding = '15px';
+            panel.style.marginBottom = '20px';
+            panel.style.transform = 'translateY(0)';
+        });
+
+        // Una vez termina la animación, dejamos la altura libre por si el contenido cambia
+        setTimeout(() => { if (modoExportacion) panel.style.maxHeight = 'none'; }, 420);
+
         // ¡LA MAGIA AQUÍ! Al dejarlo vacío, respetamos el Flexbox/Grid de tu plantilla
         colsCheck.forEach(col => col.style.display = '');
         if (thCheck) thCheck.style.display = ''; 
@@ -3698,7 +3744,19 @@ function toggleModoExportacion() {
         btn.style.background = 'var(--acento-rojo)';
         btn.style.borderColor = 'var(--acento-rojo)';
     } else {
-        panel.style.display = 'none';
+        // Volvemos a fijar la altura actual antes de colapsar, para que la transición tenga de dónde partir
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        void panel.offsetHeight; // forzar reflow
+
+        requestAnimationFrame(() => {
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+            panel.style.padding = '0 15px';
+            panel.style.marginBottom = '0';
+            panel.style.transform = 'translateY(-8px)';
+        });
+
+        setTimeout(() => { if (!modoExportacion) panel.style.display = 'none'; }, 400);
         
         // Volvemos a ocultarlos
         colsCheck.forEach(col => col.style.display = 'none');
@@ -3729,19 +3787,60 @@ function actualizarContador() {
     document.getElementById('contador-seleccionados').innerText = seleccionados + ' seleccionados';
 }
 
+let descargaLoteCancelada = false;
+
 async function descargarLote() {
     const checks = document.querySelectorAll('.check-doc:checked');
     if (checks.length === 0) {
-        alert("Por favor, seleccione al menos un documento.");
+        mostrarNotificacionToast("Por favor, seleccione al menos un documento.", "error");
         return;
     }
 
     // Leemos qué formato de bautismo eligió la persona
     const formatoBautismo = document.getElementById('formato-lote-bautismo').value;
 
-    alert(`Se iniciará la descarga de ${checks.length} documentos.\n\nIMPORTANTE:\n1. Si el navegador muestra un aviso de "Intentando descargar múltiples archivos", dele a "Permitir".\n2. Si configuró su navegador, se guardarán automáticamente en su carpeta de Descargas.\n\nPor favor, espere a que terminen de bajar todos.`);
+    // Referencias al modal personalizado
+    const icono = document.getElementById('icono-descarga-lote');
+    const titulo = document.getElementById('titulo-descarga-lote');
+    const texto = document.getElementById('texto-descarga-lote');
+    const barra = document.getElementById('barra-progreso-descarga');
+    const contador = document.getElementById('contador-progreso-descarga');
+    const zonaBotones = document.getElementById('zona-botones-descarga-lote');
+
+    // Estado inicial del modal
+    descargaLoteCancelada = false;
+    icono.className = 'fas fa-cloud-download-alt';
+    icono.style.color = 'var(--acento-dorado)';
+    titulo.textContent = 'Descargando documentos';
+    texto.textContent = 'Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar. Por favor espere.';
+    barra.style.background = 'linear-gradient(90deg, var(--acento-dorado), #a87f55)';
+    barra.style.width = '0%';
+    contador.textContent = `0 de ${checks.length} documentos`;
+    zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-secundario" onclick="cancelarDescargaLote()"><i class="fas fa-times"></i> Cancelar descarga</button>`;
+
+    abrirModal('modal-descarga-lote');
+
+    let completados = 0;
 
     for (let i = 0; i < checks.length; i++) {
+        if (descargaLoteCancelada) {
+            // Descarga interrumpida por el usuario
+            icono.className = 'fas fa-exclamation-triangle';
+            icono.style.color = 'var(--acento-rojo, #c0392b)';
+            titulo.textContent = 'Descarga interrumpida';
+            texto.textContent = `Se descargaron ${completados} de ${checks.length} documentos antes de cancelar. ¿Desea continuar con los documentos restantes?`;
+            barra.style.background = '#c0392b';
+
+            const restantes = checks.length - completados;
+            zonaBotones.innerHTML = `
+                <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote'); toggleModoExportacion();">No, finalizar</button>
+                <button type="button" class="boton-sagrado-primario" onclick="reanudarDescargaLote(${completados})">
+                    <i class="fas fa-redo"></i> Continuar (${restantes} restante${restantes !== 1 ? 's' : ''})
+                </button>
+            `;
+            return;
+        }
+
         let url = checks[i].getAttribute('data-url');
         
         if(url.includes('generar_bautismo_pdf')) {
@@ -3757,10 +3856,122 @@ async function descargarLote() {
         link.click(); 
         document.body.removeChild(link);
 
+        completados++;
+        barra.style.width = Math.round((completados / checks.length) * 100) + '%';
+        contador.textContent = `${completados} de ${checks.length} documentos`;
+
         await new Promise(r => setTimeout(r, 2000));
     }
-    
-    toggleModoExportacion();
+
+    // Estado final: éxito (solo si no fue cancelada)
+    if (!descargaLoteCancelada) {
+        icono.className = 'fas fa-check-circle';
+        icono.style.color = '#4caf50';
+        titulo.textContent = '¡Descarga completada!';
+        texto.textContent = `Se procesaron ${checks.length} documento${checks.length !== 1 ? 's' : ''} correctamente. Revise su carpeta de descargas.`;
+        zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-primario" onclick="cerrarModal('modal-descarga-lote')">Entendido</button>`;
+        
+        toggleModoExportacion();
+    }
+}
+
+function cancelarDescargaLote() {
+    descargaLoteCancelada = true;
+}
+
+async function reanudarDescargaLote(desdeIndice) {
+    const checks = document.querySelectorAll('.check-doc:checked');
+    const formatoBautismo = document.getElementById('formato-lote-bautismo').value;
+
+    const icono = document.getElementById('icono-descarga-lote');
+    const titulo = document.getElementById('titulo-descarga-lote');
+    const texto = document.getElementById('texto-descarga-lote');
+    const barra = document.getElementById('barra-progreso-descarga');
+    const contador = document.getElementById('contador-progreso-descarga');
+    const zonaBotones = document.getElementById('zona-botones-descarga-lote');
+
+    descargaLoteCancelada = false;
+    icono.className = 'fas fa-cloud-download-alt';
+    icono.style.color = 'var(--acento-dorado)';
+    titulo.textContent = 'Reanudando descarga';
+    barra.style.background = 'linear-gradient(90deg, var(--acento-dorado), #a87f55)';
+    zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-secundario" onclick="cancelarDescargaLote()"><i class="fas fa-times"></i> Cancelar descarga</button>`;
+
+    let completados = desdeIndice;
+
+    for (let i = desdeIndice; i < checks.length; i++) {
+        if (descargaLoteCancelada) {
+            icono.className = 'fas fa-exclamation-triangle';
+            icono.style.color = 'var(--acento-rojo, #c0392b)';
+            titulo.textContent = 'Descarga interrumpida';
+            texto.textContent = `Se descargaron ${completados} de ${checks.length} documentos antes de cancelar. ¿Desea continuar con los documentos restantes?`;
+            barra.style.background = '#c0392b';
+
+            const restantes = checks.length - completados;
+            zonaBotones.innerHTML = `
+                <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote'); toggleModoExportacion();">No, finalizar</button>
+                <button type="button" class="boton-sagrado-primario" onclick="reanudarDescargaLote(${completados})">
+                    <i class="fas fa-redo"></i> Continuar (${restantes} restante${restantes !== 1 ? 's' : ''})
+                </button>
+            `;
+            return;
+        }
+
+        let url = checks[i].getAttribute('data-url');
+        if(url.includes('generar_bautismo_pdf')) {
+            url += '&formato=' + formatoBautismo;
+        }
+
+        let link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', '');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        completados++;
+        barra.style.width = Math.round((completados / checks.length) * 100) + '%';
+        contador.textContent = `${completados} de ${checks.length} documentos`;
+        texto.textContent = 'Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar. Por favor espere.';
+
+        await new Promise(r => setTimeout(r, 2000));
+    }
+
+    if (!descargaLoteCancelada) {
+        icono.className = 'fas fa-check-circle';
+        icono.style.color = '#4caf50';
+        titulo.textContent = '¡Descarga completada!';
+        texto.textContent = `Se procesaron ${checks.length} documento${checks.length !== 1 ? 's' : ''} correctamente. Revise su carpeta de descargas.`;
+        zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-primario" onclick="cerrarModal('modal-descarga-lote')">Entendido</button>`;
+
+        toggleModoExportacion();
+    }
+}
+
+/* Pequeño toast de aviso (reutiliza el patrón visual de las notificaciones de la app) */
+function mostrarNotificacionToast(mensaje, tipo = 'info') {
+    let toast = document.getElementById('toast-app-temporal');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-app-temporal';
+        toast.style.cssText = `
+            position: fixed; top: 20px; right: 20px; z-index: 99999;
+            background: var(--fondo-tarjeta, #fff); color: var(--texto-principal, #1a2238);
+            padding: 15px 22px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            border-left: 5px solid var(--acento-dorado); font-weight: 600; font-size: 0.92rem;
+            transform: translateX(130%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 320px;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.style.borderLeftColor = tipo === 'error' ? 'var(--acento-rojo, #c0392b)' : 'var(--acento-dorado)';
+    toast.textContent = mensaje;
+    requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
+    clearTimeout(toast._timeoutId);
+    toast._timeoutId = setTimeout(() => {
+        toast.style.transform = 'translateX(130%)';
+    }, 3500);
 }
 
 // Apagar el modo exportación si el usuario se sale de la carpeta
