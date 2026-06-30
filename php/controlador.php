@@ -893,6 +893,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
         $rol = $_POST['usuario-rol'];
 
         try {
+            // Si el admin está editando SU PROPIO perfil, exigir confirmación de contraseña
+            if ($id == $_SESSION['usuario_id']) {
+                if (empty($_POST['clave-admin-confirmar'])) {
+                    throw new Exception("Debe confirmar su contraseña para modificar su propio rol.");
+                }
+                $stmtPass = $pdo->prepare("SELECT clave FROM usuarios WHERE id = ?");
+                $stmtPass->execute([$id]);
+                $datosPass = $stmtPass->fetch();
+                if (!$datosPass || !password_verify($_POST['clave-admin-confirmar'], $datosPass['clave'])) {
+                    throw new Exception("Contraseña incorrecta. No se realizaron cambios.");
+                }
+            }
+
             $stmtVerificar = $pdo->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
             $stmtVerificar->execute([$id]);
             $datosDestino = $stmtVerificar->fetch();

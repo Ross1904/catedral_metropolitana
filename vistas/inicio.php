@@ -646,18 +646,31 @@ unset($_SESSION['modulo_activo']);
 
             <div id="panel-exportacion" style="background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 0 15px; margin-bottom: 0; gap: 15px; align-items: center; justify-content: space-between; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-8px); transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.4s ease, margin 0.4s ease, transform 0.35s ease;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px;">
-                    <label for="check-todos" style="font-weight: bold; cursor: pointer; color: var(--texto-principal);">Seleccionar Todos</label>
-                    <span id="contador-seleccionados" style="margin-left: 15px; opacity: 0.8; font-size: 0.9rem;">0 seleccionados</span>
+                    <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px; accent-color: var(--acento-dorado);">
+                    <label for="check-todos" class="label-formato-bautismo" style="font-weight: bold; cursor: pointer;">Seleccionar Todos</label>
+                    <span id="contador-seleccionados" class="label-formato-bautismo" style="margin-left: 15px; opacity: 0.75; font-size: 0.9rem;">0 seleccionados</span>
                 </div>
                 
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd;">
-                        <label for="formato-lote-bautismo" style="font-size: 0.9rem; font-weight: bold; color: #555;">Formato Bautismos:</label>
-                        <select id="formato-lote-bautismo" style="border: none; outline: none; background: transparent; font-size: 0.9rem; color: var(--texto-principal);">
-                            <option value="nacional">Nacional</option>
-                            <option value="exterior">Para el Exterior</option>
-                        </select>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label class="label-formato-bautismo" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">
+                            <i class="fas fa-file-alt" style="color: var(--acento-dorado);"></i> Formato Bautismo:
+                        </label>
+                        <div class="select-personalizado-catedral" style="min-width: 185px;">
+                            <input type="hidden" id="formato-lote-bautismo" value="nacional">
+                            <div class="select-trigger-catedral" onclick="toggleSelectCatedral(this)">
+                                <span class="select-texto" id="formato-bautismo-texto">Nacional</span>
+                                <i class="fas fa-chevron-down select-icono"></i>
+                            </div>
+                            <ul class="select-opciones-catedral">
+                                <li onclick="seleccionarFormatoBautismo(this, 'nacional', 'Nacional')">
+                                    <i class="fas fa-flag" style="color: var(--acento-dorado); margin-right: 8px;"></i> Nacional
+                                </li>
+                                <li onclick="seleccionarFormatoBautismo(this, 'exterior', 'Para el Exterior')">
+                                    <i class="fas fa-globe" style="color: var(--acento-dorado); margin-right: 8px;"></i> Para el Exterior
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     <button class="boton-sagrado-primario" onclick="descargarLote()" style="background: #2c3e50; border-color: #1a252f; margin: 0;">
@@ -2093,7 +2106,7 @@ try {
                 <button class="btn-cerrar-modal" onclick="cerrarModal('modal-admin-editar-usuario')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-cuerpo">
-                <form method="POST" action="../php/controlador.php" autocomplete="off">
+                <form id="form-admin-editar-usuario" method="POST" action="../php/controlador.php" autocomplete="off" onsubmit="return interceptarCambioRol(event)">
                     <input type="hidden" name="accion" value="admin-editar-usuario">
                     <input type="hidden" name="usuario-id" id="admin-edit-user-id">
 
@@ -2128,6 +2141,35 @@ try {
                         <button type="submit" class="boton-sagrado-primario"><i class="fas fa-save"></i> Guardar Cambios</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación con contraseña para cambio de propio rol -->
+    <div id="modal-confirmar-cambio-rol" class="modal-catedral">
+        <div class="modal-contenido" style="max-width: 420px; border-top: 5px solid var(--acento-dorado);">
+            <div class="modal-cabecera">
+                <h3 style="color: var(--acento-dorado);"><i class="fas fa-shield-alt"></i> Confirmar cambio de rol</h3>
+                <button class="btn-cerrar-modal" onclick="cerrarModal('modal-confirmar-cambio-rol')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-cuerpo" style="text-align: center;">
+                <i class="fas fa-user-cog" style="font-size: 3rem; color: var(--acento-dorado); margin-bottom: 15px; display: block;"></i>
+                <p style="margin-bottom: 8px; line-height: 1.6;">Está a punto de cambiar <strong>su propio rol</strong> a <strong id="texto-nuevo-rol" style="color: var(--acento-dorado);"></strong>.</p>
+                <p style="margin-bottom: 20px; font-size: 0.88rem; opacity: 0.75; line-height: 1.5;">Esta acción modificará sus propios permisos dentro del sistema. Confirme con su contraseña para continuar.</p>
+                <div class="grupo-entrada" style="text-align: left;">
+                    <label style="font-weight: bold; margin-bottom: 5px; display: block;">Contraseña:</label>
+                    <div class="contenedor-clave">
+                        <input type="password" id="pass-confirmar-cambio-rol" class="input-estilo-catedral" placeholder="Ingrese su contraseña" autocomplete="new-password">
+                        <i class="fas fa-eye icono-ver-clave" onclick="toggleclave('pass-confirmar-cambio-rol', this)" title="Mostrar contraseña"></i>
+                    </div>
+                    <p id="error-pass-cambio-rol" style="color: var(--acento-rojo); font-size: 0.85rem; margin-top: 6px; display: none;"><i class="fas fa-exclamation-circle"></i> La contraseña no puede estar vacía.</p>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-confirmar-cambio-rol')">Cancelar</button>
+                    <button type="button" class="boton-sagrado-primario" onclick="confirmarYEnviarCambioRol()" style="background: var(--acento-dorado); border-color: var(--acento-dorado); color: #1a2238;">
+                        <i class="fas fa-check"></i> Confirmar cambio
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2801,6 +2843,10 @@ try {
     </div>
 
     <style>
+        /* Etiquetas del panel de exportación — responden al modo oscuro */
+        .label-formato-bautismo { color: var(--texto-claro); }
+        body.oscuro .label-formato-bautismo { color: var(--texto-oscuro); }
+
         /* Texto del modal de descarga: hereda correctamente en ambos modos */
         .texto-modal-descarga { color: var(--texto-claro); }
         body.oscuro .texto-modal-descarga { color: var(--texto-oscuro); }
@@ -3212,6 +3258,7 @@ try {
 
         function cerrarSalaSecreta() {
             cerrarModal('modal-easter-egg'); clearInterval(gameLoop); stopMusic();
+            detenerCaos();
             window.removeEventListener('keydown', controladorKeyDown);
             window.removeEventListener('keyup', controladorKeyUp);
             for(let key in teclas) teclas[key] = false;
@@ -3286,17 +3333,19 @@ try {
 
         function volverMenuJuegos() {
             clearInterval(gameLoop); stopMusic(); estadoJuego = 'detenido';
+            detenerCaos();
             document.getElementById('menu-juegos').style.display = 'block';
             document.getElementById('pantalla-juego').style.display = 'none';
         }
 
         function prepararJuego(tipo) {
             juegoActual = tipo;
+            detenerCaos(); // limpiar caos de partida anterior
             document.getElementById('menu-juegos').style.display = 'none';
             document.getElementById('pantalla-juego').style.display = 'block';
             
             if(tipo === 'panes') {
-                document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: gold">Flechas o A/D ⬅️ ➡️</strong> atrapar.<br> <span style="font-size:0.8rem;">ESPACIO Iniciar</span>';
+                document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: gold">Flechas o A/D ⬅️ ➡️</strong> atrapar.<br><span style="font-size:0.75rem; color:#ff8c00;">⚠️ ¡Cuidado! La cámara enloquecerá cada ~20s</span><br><span style="font-size:0.8rem;">ESPACIO Iniciar</span>';
                 canvas.style.background = 'linear-gradient(to bottom, #0f2027, #203a43, #2c5364)';
             } else if(tipo === 'flappy') {
                 document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: #87CEEB">ESPACIO, ⬆️ o W</strong> volar.';
@@ -3363,25 +3412,195 @@ try {
         }
 
         /* JUEGO 1: PANES*/
+        /* ====== SISTEMA DE CAOS DE CÁMARA - MILAGRO DE LOS PANES ====== */
+        let caosActual = null;         // efecto activo
+        let caosTimer = null;          // timeout para el próximo caos
+        let caosTimeout = null;        // timeout para finalizar efecto actual
+        let sacudidaFrame = 0;         // frame counter para shake
+        let caosMensajeTimer = null;   // timeout para el mensaje HUD
+
+        const EFECTOS_CAOS = [
+            { id: 'invertir_h',   nombre: '¡ESPEJO!',         duracion: 8000  },
+            { id: 'invertir_v',   nombre: '¡AL REVÉS!',       duracion: 8000  },
+            { id: 'rotar_90',     nombre: '¡GIRO 90°!',       duracion: 7000  },
+            { id: 'rotar_270',    nombre: '¡GIRO -90°!',      duracion: 7000  },
+            { id: 'rotar_180',    nombre: '¡CABEZA ABAJO!',   duracion: 8000  },
+            { id: 'sacudir',      nombre: '¡TERREMOTO!',      duracion: 5000  },
+            { id: 'controles_inv',nombre: '¡CONTROLES LOCOS!',duracion: 9000  },
+            { id: 'zoom_out',     nombre: '¡ALEJÁNDOSE!',     duracion: 7000  },
+        ];
+
+        let caosControlesInvertidos = false;
+        let caosMensajeActual = '';
+        let caosMensajeOpacidad = 0;
+
+        function dispararCaos() {
+            if (juegoActual !== 'panes') return;
+
+            // Elegir efecto aleatorio distinto al actual
+            let candidatos = EFECTOS_CAOS.filter(e => !caosActual || e.id !== caosActual.id);
+            let efecto = candidatos[Math.floor(Math.random() * candidatos.length)];
+            caosActual = efecto;
+            caosControlesInvertidos = (efecto.id === 'controles_inv');
+
+            // Mostrar mensaje HUD con el nombre del efecto
+            caosMensajeActual = efecto.nombre;
+            caosMensajeOpacidad = 1.0;
+
+            // Programar fin del efecto
+            clearTimeout(caosTimeout);
+            caosTimeout = setTimeout(() => {
+                caosActual = null;
+                caosControlesInvertidos = false;
+                caosMensajeActual = '';
+            }, efecto.duracion);
+
+            // Programar siguiente caos (entre 18 y 24 segundos)
+            clearTimeout(caosTimer);
+            caosTimer = setTimeout(dispararCaos, 18000 + Math.random() * 6000);
+        }
+
+        function iniciarTimerCaos() {
+            clearTimeout(caosTimer);
+            clearTimeout(caosTimeout);
+            caosActual = null;
+            caosControlesInvertidos = false;
+            // Primer caos entre 15 y 22 segundos de juego
+            caosTimer = setTimeout(dispararCaos, 15000 + Math.random() * 7000);
+        }
+
+        function detenerCaos() {
+            clearTimeout(caosTimer);
+            clearTimeout(caosTimeout);
+            caosActual = null;
+            caosControlesInvertidos = false;
+            caosMensajeActual = '';
+            sacudidaFrame = 0;
+        }
+
+        function aplicarTransformCaos(canvas_w, canvas_h) {
+            if (!caosActual) return;
+            const cx = canvas_w / 2, cy = canvas_h / 2;
+            sacudidaFrame++;
+
+            switch(caosActual.id) {
+                case 'invertir_h':
+                    ctx.translate(canvas_w, 0); ctx.scale(-1, 1); break;
+                case 'invertir_v':
+                    ctx.translate(0, canvas_h); ctx.scale(1, -1); break;
+                case 'rotar_90':
+                    ctx.translate(cx, cy); ctx.rotate(Math.PI / 2); ctx.translate(-cy, -cx); break;
+                case 'rotar_270':
+                    ctx.translate(cx, cy); ctx.rotate(-Math.PI / 2); ctx.translate(-cy, -cx); break;
+                case 'rotar_180':
+                    ctx.translate(cx, cy); ctx.rotate(Math.PI); ctx.translate(-cx, -cy); break;
+                case 'sacudir':
+                    const amp = 6;
+                    const sx = Math.sin(sacudidaFrame * 0.8) * amp;
+                    const sy = Math.cos(sacudidaFrame * 1.1) * amp;
+                    ctx.translate(sx, sy); break;
+                case 'controles_inv':
+                    // sin transformación visual, solo los controles cambian
+                    break;
+                case 'zoom_out':
+                    ctx.translate(cx, cy); ctx.scale(0.65, 0.65); ctx.translate(-cx, -cy); break;
+            }
+        }
+
+        function dibujarHUDCaos() {
+            if (!caosMensajeActual && caosMensajeOpacidad <= 0) return;
+            if (caosMensajeOpacidad > 0) {
+                // Fade out gradual cuando ya no hay efecto activo
+                if (!caosActual) caosMensajeOpacidad = Math.max(0, caosMensajeOpacidad - 0.02);
+
+                ctx.save();
+                ctx.globalAlpha = caosMensajeOpacidad;
+                ctx.font = 'bold 22px "Segoe UI", Arial';
+                ctx.textAlign = 'center';
+                // Fondo semitransparente
+                const tw = ctx.measureText(caosMensajeActual || '').width;
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.beginPath();
+                ctx.roundRect(200 - tw/2 - 14, 168, tw + 28, 38, 8);
+                ctx.fill();
+                // Texto con borde dorado
+                ctx.strokeStyle = '#C69C6D';
+                ctx.lineWidth = 3;
+                ctx.strokeText(caosMensajeActual || '', 200, 193);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(caosMensajeActual || '', 200, 193);
+                ctx.restore();
+            }
+        }
+
+        /* Indicador visual de controles invertidos */
+        function dibujarIndicadorControles() {
+            if (!caosControlesInvertidos) return;
+            ctx.save();
+            ctx.font = '13px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255,80,80,0.9)';
+            ctx.fillText('← → INVERTIDOS', 200, 20);
+            ctx.restore();
+        }
+
+        /* ====== FIN SISTEMA DE CAOS ====== */
+
         let vidasPanes=3, cristoX=175, itemsPanes=[];
-        function iniciarPanes() { itemsPanes=[]; vidasPanes=3; cristoX=175; actualizarScoreUI(); gameLoop=setInterval(loopPanes, 40); }
+        function iniciarPanes() {
+            itemsPanes=[]; vidasPanes=3; cristoX=175;
+            iniciarTimerCaos();
+            actualizarScoreUI();
+            gameLoop=setInterval(loopPanes, 40);
+        }
         function loopPanes() {
-            if((teclas['ArrowLeft'] || teclas['KeyA']) && cristoX > 10) cristoX -= 18; 
-            if((teclas['ArrowRight'] || teclas['KeyD']) && cristoX < 340) cristoX += 18;
-            
-            ctx.clearRect(0,0,400,400); ctx.fillStyle="rgba(255, 255, 255, 0.2)"; ctx.fillRect(50,50,2,2); ctx.fillRect(150,120,2,2);
+            // Movimiento con posible inversión de controles
+            const irIzq = caosControlesInvertidos
+                ? (teclas['ArrowRight'] || teclas['KeyD'])
+                : (teclas['ArrowLeft']  || teclas['KeyA']);
+            const irDer = caosControlesInvertidos
+                ? (teclas['ArrowLeft']  || teclas['KeyA'])
+                : (teclas['ArrowRight'] || teclas['KeyD']);
+
+            if(irIzq && cristoX > 10)  cristoX -= 18;
+            if(irDer && cristoX < 340) cristoX += 18;
+
+            ctx.clearRect(0,0,400,400);
+
+            // Aplicar transformación de caos
+            ctx.save();
+            aplicarTransformCaos(400, 400);
+
+            // Fondo decorativo
+            ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.fillRect(50,50,2,2); ctx.fillRect(150,120,2,2);
+
+            // Dibujar personaje (Cristo)
             ctx.beginPath(); ctx.arc(cristoX+25,340,18,0,Math.PI*2); ctx.strokeStyle="gold"; ctx.lineWidth=3; ctx.stroke();
             ctx.beginPath(); ctx.arc(cristoX+25,345,12,0,Math.PI*2); ctx.fillStyle="#f1c27d"; ctx.fill();
             ctx.fillStyle="#fff"; ctx.fillRect(cristoX+10,355,30,45); ctx.strokeStyle="#f1c27d"; ctx.lineWidth=5;
             ctx.beginPath(); ctx.moveTo(cristoX+10,365); ctx.lineTo(cristoX-10,350); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(cristoX+40,365); ctx.lineTo(cristoX+60,350); ctx.stroke();
-            if (Math.random() < 0.03 + (score * 0.0005)) itemsPanes.push({x: Math.random()*370, y: -30, speed: 2 + Math.random()*2 + (score*0.05), tipo: ['🍞','🐟'][Math.floor(Math.random()*2)]});
+
+            // Spawn items
+            if (Math.random() < 0.03 + (score * 0.0005))
+                itemsPanes.push({x: Math.random()*370, y: -30, speed: 2 + Math.random()*2 + (score*0.05), tipo: ['🍞','🐟'][Math.floor(Math.random()*2)]});
+
             ctx.font='30px Arial';
             for(let i=0; i<itemsPanes.length; i++){
                 let p=itemsPanes[i]; p.y+=p.speed; ctx.fillText(p.tipo, p.x, p.y);
-                if(p.y>330 && p.y<390 && p.x+30 > cristoX-15 && p.x < cristoX+65){ score++; itemsPanes.splice(i,1); i--; playRetroSound('score'); actualizarScoreUI(); }
-                else if(p.y>400){ vidasPanes--; itemsPanes.splice(i,1); i--; playRetroSound('hit'); actualizarScoreUI(); if(vidasPanes<=0) finJuego("La multitud fue alimentada.", `Atrapaste: ${score}`); }
+                if(p.y>330 && p.y<390 && p.x+30 > cristoX-15 && p.x < cristoX+65){
+                    score++; itemsPanes.splice(i,1); i--; playRetroSound('score'); actualizarScoreUI();
+                } else if(p.y>400){
+                    vidasPanes--; itemsPanes.splice(i,1); i--; playRetroSound('hit'); actualizarScoreUI();
+                    if(vidasPanes<=0){ detenerCaos(); finJuego("La multitud fue alimentada.", `Atrapaste: ${score}`); }
+                }
             }
+
+            ctx.restore(); // Fin de transformación de caos
+
+            // HUD de caos (siempre sobre el canvas sin transformar)
+            dibujarHUDCaos();
+            dibujarIndicadorControles();
         }
 
         /* JUEGO 2: FLAPPY*/
@@ -3734,7 +3953,13 @@ function toggleModoExportacion() {
         });
 
         // Una vez termina la animación, dejamos la altura libre por si el contenido cambia
-        setTimeout(() => { if (modoExportacion) panel.style.maxHeight = 'none'; }, 420);
+        // y cambiamos overflow a visible para que el dropdown del select no quede recortado
+        setTimeout(() => { 
+            if (modoExportacion) {
+                panel.style.maxHeight = 'none';
+                panel.style.overflow = 'visible';
+            }
+        }, 420);
 
         // ¡LA MAGIA AQUÍ! Al dejarlo vacío, respetamos el Flexbox/Grid de tu plantilla
         colsCheck.forEach(col => col.style.display = '');
@@ -3744,6 +3969,8 @@ function toggleModoExportacion() {
         btn.style.background = 'var(--acento-rojo)';
         btn.style.borderColor = 'var(--acento-rojo)';
     } else {
+        // Volvemos overflow a hidden antes de animar el cierre
+        panel.style.overflow = 'hidden';
         // Volvemos a fijar la altura actual antes de colapsar, para que la transición tenga de dónde partir
         panel.style.maxHeight = panel.scrollHeight + 'px';
         void panel.offsetHeight; // forzar reflow
@@ -3949,7 +4176,72 @@ async function reanudarDescargaLote(desdeIndice) {
     }
 }
 
-/* Pequeño toast de aviso (reutiliza el patrón visual de las notificaciones de la app) */
+/* ===== CONFIRMACIÓN DE CAMBIO DE PROPIO ROL ===== */
+const ID_USUARIO_ACTUAL = <?php echo $idUsuario; ?>;
+let rolNombres = { '1': 'Ciudadano', '2': 'Secretario', '3': 'Administrador' };
+
+function interceptarCambioRol(event) {
+    const userIdEditando = parseInt(document.getElementById('admin-edit-user-id').value);
+    const nuevoRol = document.getElementById('admin-edit-user-rol-hidden').value;
+
+    // Solo pedir confirmación si el admin está cambiando SU PROPIO rol
+    if (userIdEditando === ID_USUARIO_ACTUAL) {
+        event.preventDefault();
+
+        // Mostrar el nombre del nuevo rol en el modal
+        document.getElementById('texto-nuevo-rol').textContent = rolNombres[nuevoRol] || 'otro rol';
+        document.getElementById('pass-confirmar-cambio-rol').value = '';
+        document.getElementById('error-pass-cambio-rol').style.display = 'none';
+
+        cerrarModal('modal-admin-editar-usuario');
+        abrirModal('modal-confirmar-cambio-rol');
+        return false;
+    }
+    return true; // Para otros usuarios, enviar normalmente
+}
+
+function confirmarYEnviarCambioRol() {
+    const pass = document.getElementById('pass-confirmar-cambio-rol').value.trim();
+    const errorEl = document.getElementById('error-pass-cambio-rol');
+
+    if (!pass) {
+        errorEl.style.display = 'block';
+        document.getElementById('pass-confirmar-cambio-rol').focus();
+        return;
+    }
+    errorEl.style.display = 'none';
+
+    // Insertar la contraseña como campo oculto en el formulario y enviar
+    const form = document.getElementById('form-admin-editar-usuario');
+    let inputClave = form.querySelector('input[name="clave-admin-confirmar"]');
+    if (!inputClave) {
+        inputClave = document.createElement('input');
+        inputClave.type = 'hidden';
+        inputClave.name = 'clave-admin-confirmar';
+        form.appendChild(inputClave);
+    }
+    inputClave.value = pass;
+
+    cerrarModal('modal-confirmar-cambio-rol');
+    form.submit();
+}
+
+
+function seleccionarFormatoBautismo(li, valor, textoVisible) {
+    document.getElementById('formato-lote-bautismo').value = valor;
+    document.getElementById('formato-bautismo-texto').textContent = textoVisible;
+
+    // Cerrar el dropdown (mismo patrón que los demás selects de la app)
+    const opciones = li.closest('.select-opciones-catedral');
+    const contenedor = li.closest('.select-personalizado-catedral');
+    if (opciones) opciones.style.display = 'none';
+    if (contenedor) contenedor.classList.remove('abierto');
+
+    // Marcar el ítem seleccionado visualmente
+    li.closest('ul').querySelectorAll('li').forEach(item => item.classList.remove('seleccionado'));
+    li.classList.add('seleccionado');
+}
+
 function mostrarNotificacionToast(mensaje, tipo = 'info') {
     let toast = document.getElementById('toast-app-temporal');
     if (!toast) {
