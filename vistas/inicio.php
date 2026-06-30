@@ -355,20 +355,15 @@ unset($_SESSION['modulo_activo']);
                 <button class="boton-navegacion-calendario" id="btn-mes-anterior" title="Mes Anterior">
                     <i class="fas fa-chevron-left"></i>
                 </button>
-                
                 <h3 id="mes-anio-display" style="transition: all 0.3s ease;">Cargando...</h3>
-                
                 <button class="boton-navegacion-calendario" id="btn-mes-siguiente" title="Mes Siguiente">
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
-            
             <div class="calendario-dias-semana">
                 <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
             </div>
-            
-            <div class="calendario-cuadricula" id="cuadricula-dias">
-                </div>
+            <div class="calendario-cuadricula" id="cuadricula-dias"></div>
         </div>
     </section>
 
@@ -379,11 +374,17 @@ unset($_SESSION['modulo_activo']);
                 <p style="margin:0; opacity:0.8;">Gestión de catequesis, grupos de devoción y reuniones regulares.</p>
             </div>
             
-            <?php if($esSecretario): ?>
-            <button class="boton-crear-sagrado" onclick="abrirModal('modal-actividad')">
-                <i class="fas fa-cross"></i> Nueva Actividad
-            </button>
-            <?php endif; ?>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                <?php if($esSecretario): ?>
+                <button class="boton-crear-sagrado" onclick="abrirModal('modal-actividad')" style="margin: 0;">
+                    <i class="fas fa-cross"></i> Nueva Actividad
+                </button>
+                <?php endif; ?>
+                <div style="position: relative; width: 100%; max-width: 320px;">
+                    <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
+                    <input type="text" id="buscador-formacion" onkeyup="filtrarFormacion()" class="input-estilo-catedral" placeholder="Buscar actividad, categoría, lugar..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                </div>
+            </div>
         </div>
         
         <div class="grid-actividades" id="lista-formacion">
@@ -445,6 +446,11 @@ unset($_SESSION['modulo_activo']);
             </button>
         </div>
         <?php endif; ?>
+
+        <div id="mensaje-sin-formacion" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
+            <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
+        </div>
+
     </section>
 
     <?php if($esSecretario): ?>
@@ -466,6 +472,11 @@ unset($_SESSION['modulo_activo']);
                 <button class="boton-sagrado-primario" onclick="abrirModal('modal-nueva-donacion')" style="margin: 0;">
                     <i class="fas fa-plus-circle"></i> Registrar Ingreso
                 </button>
+            </div>
+
+            <div style="position: relative; width: 100%; max-width: 320px;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
+                <input type="text" id="buscador-donaciones" onkeyup="filtrarDonaciones()" class="input-estilo-catedral" placeholder="Buscar por donante, tipo, método..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             </div>
 
             <div class="tarjeta-estadistica" style="border-left: 5px solid #6b9071; min-width: 250px; margin: 0; padding: 10px 10px;">
@@ -574,6 +585,10 @@ unset($_SESSION['modulo_activo']);
     </button>
 </div>
 <?php endif; ?>
+
+<div id="mensaje-sin-donaciones" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
+    <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
+</div>
 
 </section>
 <?php endif; ?>
@@ -1072,12 +1087,18 @@ try {
 
     <?php if($esAdmin): ?>
     <section id="mod-gestion-usuarios" class="modulo">
-        <div class="encabezado-modulo">
-            <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
-            <p style="margin: 0; opacity: 0.8;">Administre los accesos y roles de las personas registradas en el sistema.</p>
+        <div class="encabezado-modulo" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+                <p style="margin: 0; opacity: 0.8;">Administre los accesos y roles de las personas registradas en el sistema.</p>
+            </div>
+            <div style="position: relative; width: 100%; max-width: 320px;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
+                <input type="text" id="buscador-usuarios" onkeyup="filtrarUsuarios()" class="input-estilo-catedral" placeholder="Buscar por nombre, usuario, rol..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            </div>
         </div>
 
-        <div class="cuadricula-tarjetas" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+        <div class="cuadricula-tarjetas" id="contenedor-tarjetas-usuarios" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
             <?php foreach($listaUsuarios as $user):
                 $rolId = $user['id_rol'];
                 
@@ -1098,7 +1119,7 @@ try {
                     $colorBorde = '#6b9071';
                 }
             ?>
-            <div class="tarjeta-ofrenda" style="border-left: 4px solid <?php echo $colorBorde; ?>;">
+            <div class="tarjeta-ofrenda item-usuario" style="border-left: 4px solid <?php echo $colorBorde; ?>;">
                 <div class="ofrenda-cabecera">
                     <span style="font-weight: bold; font-size: 1.1rem;"><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($user['usuario']); ?></span>
                     <span class="ofrenda-metodo <?php echo $badgeClase; ?>"><i class="fas <?php echo $iconoRol; ?>"></i> <?php echo $rolTexto; ?></span>
@@ -1127,6 +1148,10 @@ try {
                 </div>
             </div>
             <?php endforeach; ?>
+        </div>
+
+        <div id="mensaje-sin-usuarios" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
+            <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
         </div>
     </section>
     <?php endif; ?>
@@ -1282,6 +1307,29 @@ try {
         
     </div>
     <?php endif; ?>
+
+    <!-- PANEL LATERAL - ACTIVIDADES DE AGENDA POR MES -->
+    <div id="panel-agenda-mes" class="panel-lateral-derecho">
+        <div class="panel-lateral-cabecera" style="display: flex; flex-direction: column; gap: 15px; padding-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 style="margin: 0;"><i class="fas fa-list-ul"></i> Actividades del Mes</h3>
+                <button class="btn-cerrar-panel" onclick="togglePanelAgendaMes()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; background: rgba(198, 156, 109, 0.08); border-radius: 8px; padding: 8px 12px;">
+                <button onclick="panelAgendaMesAnterior()" style="background: none; border: 1px solid rgba(198,156,109,0.4); color: var(--acento-dorado); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: transform 0.15s ease, background 0.2s;" onmouseover="this.style.background='rgba(198,156,109,0.15)'" onmouseout="this.style.background='none'" onmousedown="this.style.transform='scale(0.88)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="panel-agenda-mes-label" style="font-weight: bold; font-size: 1rem; color: var(--texto-principal);"></span>
+                <button onclick="panelAgendaMesSiguiente()" style="background: none; border: 1px solid rgba(198,156,109,0.4); color: var(--acento-dorado); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: transform 0.15s ease, background 0.2s;" onmouseover="this.style.background='rgba(198,156,109,0.15)'" onmouseout="this.style.background='none'" onmousedown="this.style.transform='scale(0.88)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="panel-lateral-cuerpo" id="lista-eventos-agenda-mes">
+        </div>
+    </div>
 
     <div id="modal-agenda" class="modal-catedral">
         <div class="modal-contenido">
@@ -2888,6 +2936,10 @@ try {
     </button>
     <?php endif; ?>
 
+    <button class="boton-flotante-actividad" id="btn-flotante-agenda-mes" onclick="togglePanelAgendaMes()" title="Actividades del Mes" style="right: <?php echo $esSecretario ? '105px' : '30px'; ?>; display: none; align-items: center; justify-content: center;">
+        <i class="fas fa-calendar-alt" style="line-height: 1;"></i>
+    </button>
+
     <script>
         window.idActaParaBorrar = null;
 
@@ -2909,7 +2961,94 @@ try {
 
 
 
-        /* FILTRO DE BÚSQUEDA */
+        /* FILTROS DE BÚSQUEDA - FORMACIÓN Y GRUPOS */
+        function filtrarFormacion() {
+            let filtro = document.getElementById("buscador-formacion").value.toLowerCase();
+            let items = document.querySelectorAll("#lista-formacion .item-formacion");
+            let encontrados = 0;
+
+            items.forEach(function(item) {
+                let texto = item.textContent.toLowerCase();
+                if (texto.includes(filtro)) {
+                    item.style.display = "";
+                    encontrados++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            let msg = document.getElementById("mensaje-sin-formacion");
+            if (msg) {
+                if (encontrados === 0) {
+                    msg.innerHTML = filtro !== ""
+                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
+                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay actividades registradas.</p>`;
+                    msg.style.display = "block";
+                } else {
+                    msg.style.display = "none";
+                }
+            }
+        }
+
+        /* FILTROS DE BÚSQUEDA - DIEZMOS Y OFRENDAS */
+        function filtrarDonaciones() {
+            let filtro = document.getElementById("buscador-donaciones").value.toLowerCase();
+            let items = document.querySelectorAll("#contenedor-tarjetas-donaciones .item-donacion");
+            let encontrados = 0;
+
+            items.forEach(function(item) {
+                let texto = item.textContent.toLowerCase();
+                if (texto.includes(filtro)) {
+                    item.style.display = "";
+                    encontrados++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            let msg = document.getElementById("mensaje-sin-donaciones");
+            if (msg) {
+                if (encontrados === 0) {
+                    msg.innerHTML = filtro !== ""
+                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
+                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay donaciones registradas.</p>`;
+                    msg.style.display = "block";
+                } else {
+                    msg.style.display = "none";
+                }
+            }
+        }
+
+        /* FILTROS DE BÚSQUEDA - GESTIÓN DE USUARIOS */
+        function filtrarUsuarios() {
+            let filtro = document.getElementById("buscador-usuarios").value.toLowerCase();
+            let items = document.querySelectorAll("#contenedor-tarjetas-usuarios .item-usuario");
+            let encontrados = 0;
+
+            items.forEach(function(item) {
+                let texto = item.textContent.toLowerCase();
+                if (texto.includes(filtro)) {
+                    item.style.display = "";
+                    encontrados++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            let msg = document.getElementById("mensaje-sin-usuarios");
+            if (msg) {
+                if (encontrados === 0) {
+                    msg.innerHTML = filtro !== ""
+                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
+                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay usuarios registrados.</p>`;
+                    msg.style.display = "block";
+                } else {
+                    msg.style.display = "none";
+                }
+            }
+        }
+
+        /* FILTRO DE BÚSQUEDA - ARCHIVOS */
         function filtrarTablaArchivos() {
             let filtro = document.getElementById("buscador-archivos").value.toLowerCase();
             let filas = document.querySelectorAll("#tabla-registros-archivos tbody .fila-archivo");
@@ -3426,14 +3565,18 @@ try {
                 for (let i = 0; i < items.length; i++) {
                     if (i < itemsPorClic) {
                         items[i].style.display = ''; // Visible
+                        items[i].style.animation = '';
+                        items[i].style.opacity = '';
                     } else {
                         items[i].style.display = 'none'; // Oculto
+                        items[i].style.animation = '';
+                        items[i].style.opacity = '';
                     }
                 }
 
                 // Encender el botón si hay más elementos que el límite
                 if (items.length > itemsPorClic) {
-                    boton.style.display = 'inline-block';
+                    boton.style.display = 'inline-flex';
                 } else {
                     boton.style.display = 'none';
                 }
@@ -3449,9 +3592,23 @@ try {
             boton.addEventListener('click', function() {
                 const items = contenedor.getElementsByClassName(claseItem);
                 let mostradosEnEsteClic = 0;
-                
+
+                // Pequeña animación de "pulso" en el botón al hacer clic
+                boton.classList.add('btn-vermas-clic');
+                setTimeout(() => boton.classList.remove('btn-vermas-clic'), 300);
+
+                let retardo = 0;
                 for (let i = itemsVisibles; i < items.length; i++) {
-                    items[i].style.display = ''; 
+                    const item = items[i];
+                    item.style.display = '';
+                    item.style.opacity = '0';
+                    item.style.animation = 'none';
+                    // Forzar reflow para reiniciar la animación
+                    void item.offsetWidth;
+                    item.style.animation = `apareceVerMas 0.45s ease forwards`;
+                    item.style.animationDelay = (retardo * 70) + 'ms';
+                    retardo++;
+
                     mostradosEnEsteClic++;
                     itemsVisibles++;
                     if (mostradosEnEsteClic === itemsPorClic) break; 
@@ -3476,8 +3633,46 @@ try {
             botonMenu.addEventListener('click', function() {
                 // Al hacer clic en cualquier parte del menú, reiniciamos todo en secreto
                 funcionesReinicio.forEach(reset => reset());
+
+                // Mostrar el botón flotante de Agenda solo en el módulo de Calendario/Agenda
+                const btnAgendaMes = document.getElementById('btn-flotante-agenda-mes');
+                if (btnAgendaMes) {
+                    if (this.getAttribute('data-objetivo') === 'mod-calendario') {
+                        btnAgendaMes.style.display = 'flex';
+                    } else {
+                        btnAgendaMes.style.display = 'none';
+                        // Si el panel estaba abierto, lo cerramos al salir del módulo
+                        const panelAgenda = document.getElementById('panel-agenda-mes');
+                        if (panelAgenda) panelAgenda.classList.remove('abierto');
+                    }
+                }
+
+                // Forzar el reinicio de la animación de aparición del módulo activo.
+                // Esto garantiza que la transición se vea SIEMPRE, incluso si el
+                // navegador no la re-dispara solo por el cambio de display.
+                const objetivo = this.getAttribute('data-objetivo');
+                if (objetivo) {
+                    // Pequeño delay para esperar a que dashboard.js le añada la clase "activo"
+                    setTimeout(() => {
+                        const moduloActivo = document.getElementById(objetivo);
+                        if (moduloActivo) {
+                            moduloActivo.style.animation = 'none';
+                            void moduloActivo.offsetWidth; // forzar reflow
+                            moduloActivo.style.animation = 'aparecer 0.45s ease-out';
+                        }
+                    }, 10);
+                }
             });
         });
+
+        // Estado inicial: ocultar el botón si no arrancamos en el módulo de Calendario
+        (function inicializarVisibilidadBotonAgenda() {
+            const btnAgendaMes = document.getElementById('btn-flotante-agenda-mes');
+            if (!btnAgendaMes) return;
+            const moduloActivoInicial = document.querySelector('.item-menu.activo');
+            const esCalendarioActivo = moduloActivoInicial && moduloActivoInicial.getAttribute('data-objetivo') === 'mod-calendario';
+            btnAgendaMes.style.display = esCalendarioActivo ? 'flex' : 'none';
+        })();
 
     });
     </script>
@@ -3577,7 +3772,169 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+/* ===== PANEL LATERAL: ACTIVIDADES DE AGENDA POR MES ===== */
+const MESES_AGENDA_PANEL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ICONOS_TIPO_AGENDA = {
+    'Boda': 'fas fa-rings-wedding',
+    'Bautizo': 'fas fa-water',
+    'Comunión': 'fas fa-bread-slice',
+    'Misa Especial': 'fas fa-church',
+    'Mantenimiento': 'fas fa-tools',
+};
+
+let agendaMesPanelActual = new Date().getMonth();
+let agendaAnioPanelActual = new Date().getFullYear();
+
+function togglePanelAgendaMes() {
+    const panel = document.getElementById('panel-agenda-mes');
+    if (!panel) return;
+    panel.classList.toggle('abierto');
+    if (panel.classList.contains('abierto')) {
+        renderPanelAgendaMes();
+    }
+}
+
+function panelAgendaMesAnterior() {
+    agendaMesPanelActual--;
+    if (agendaMesPanelActual < 0) { agendaMesPanelActual = 11; agendaAnioPanelActual--; }
+    renderPanelAgendaMes();
+}
+
+function panelAgendaMesSiguiente() {
+    agendaMesPanelActual++;
+    if (agendaMesPanelActual > 11) { agendaMesPanelActual = 0; agendaAnioPanelActual++; }
+    renderPanelAgendaMes();
+}
+
+function renderPanelAgendaMes() {
+    const lista = document.getElementById('lista-eventos-agenda-mes');
+    const label = document.getElementById('panel-agenda-mes-label');
+    if (!lista || !label) return;
+
+    label.textContent = MESES_AGENDA_PANEL[agendaMesPanelActual] + ' ' + agendaAnioPanelActual;
+    // Pequeño "pop" en el label al cambiar de mes
+    label.style.animation = 'none';
+    void label.offsetWidth;
+    label.style.animation = 'pulsoBotonVerMas 0.3s ease';
+
+    const eventosMes = (typeof eventosAgendaDB !== 'undefined' ? eventosAgendaDB : []).filter(ev => {
+        const f = new Date(ev.fecha_hora_inicio);
+        return f.getMonth() === agendaMesPanelActual && f.getFullYear() === agendaAnioPanelActual;
+    }).sort((a, b) => new Date(a.fecha_hora_inicio) - new Date(b.fecha_hora_inicio));
+
+    // Reiniciar animación de entrada del contenedor
+    lista.style.animation = 'none';
+    void lista.offsetWidth;
+    lista.style.animation = 'deslizarMesEntrada 0.3s ease';
+
+    if (eventosMes.length === 0) {
+        lista.innerHTML = `
+            <div style="text-align: center; padding: 30px; opacity: 0.6;">
+                <i class="far fa-calendar-times" style="font-size: 3rem; margin-bottom: 10px; display: block; color: var(--acento-dorado);"></i>
+                <p>No hay actividades registradas en ${MESES_AGENDA_PANEL[agendaMesPanelActual]}.</p>
+            </div>`;
+        return;
+    }
+
+    lista.innerHTML = eventosMes.map((ev, idx) => {
+        const fecha = new Date(ev.fecha_hora_inicio);
+        const dia = fecha.getDate();
+        const hora = fecha.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const tipo = ev.tipo_actividad || 'Otro';
+        const icono = ICONOS_TIPO_AGENDA[tipo] || 'fas fa-calendar-day';
+        const titulo = ev.titulo_actividad || 'Sin título';
+        const retardo = idx * 45;
+
+        return `
+            <div class="item-actividad" style="cursor: default; animation-delay: ${retardo}ms;">
+                <div class="actividad-resumen" style="cursor: default;">
+                    <div class="actividad-icono"><i class="${icono}"></i></div>
+                    <div class="actividad-info-corta">
+                        <span class="act-modulo">${titulo}</span>
+                        <span class="act-tiempo">${tipo} · Día ${dia} · ${hora}</span>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
 </script>
+
+
+
+    <style>
+        /* === Animación de tarjetas al pulsar "Ver más" === */
+        @keyframes apareceVerMas {
+            from {
+                opacity: 0;
+                transform: translateY(18px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Pulso breve en el botón "Ver más" al hacer clic */
+        @keyframes pulsoBotonVerMas {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(0.94); }
+            100% { transform: scale(1); }
+        }
+        .btn-vermas-clic {
+            animation: pulsoBotonVerMas 0.3s ease;
+        }
+
+        /* Mejora de hover en los botones "Ver más" (sagrado-secundario ya tiene transición base) */
+        #btn-cargar-mas-formacion,
+        #btn-cargar-mas-donaciones,
+        #btn-cargar-mas-actividad {
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        box-shadow 0.25s ease,
+                        background 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #btn-cargar-mas-formacion:hover,
+        #btn-cargar-mas-donaciones:hover,
+        #btn-cargar-mas-actividad:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(198, 156, 109, 0.3);
+        }
+        #btn-cargar-mas-formacion i,
+        #btn-cargar-mas-donaciones i,
+        #btn-cargar-mas-actividad i {
+            transition: transform 0.3s ease;
+        }
+        #btn-cargar-mas-formacion:hover i,
+        #btn-cargar-mas-donaciones:hover i,
+        #btn-cargar-mas-actividad:hover i {
+            transform: translateY(2px);
+        }
+
+        /* === Transición de mes en el panel de Actividades de Agenda === */
+        @keyframes deslizarMesEntrada {
+            from {
+                opacity: 0;
+                transform: translateX(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        #lista-eventos-agenda-mes {
+            animation: deslizarMesEntrada 0.3s ease;
+        }
+        #lista-eventos-agenda-mes .item-actividad {
+            animation: deslizarMesEntrada 0.35s ease backwards;
+        }
+        #panel-agenda-mes-label {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+    </style>
 
 </body>
 </html>

@@ -1,11 +1,28 @@
 <?php
+require_once '../php/config_sesion.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * Si el usuario llega a la pantalla de login con una sesión activa
+ * (por ejemplo, porque el navegador restauró cookies tras cerrarse
+ * de forma no estándar), NO lo redirigimos automáticamente a inicio.php.
+ * Llegar a login.php es una señal explícita de que se quiere autenticar
+ * de nuevo, así que cerramos cualquier sesión residual.
+ */
 if (isset($_SESSION['usuario_id'])) {
-    header("Location: inicio.php");
-    exit();
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    session_destroy();
+    session_start();
 }
 
 if (isset($_SESSION['flash_mensaje'])) {
