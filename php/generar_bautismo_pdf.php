@@ -46,13 +46,13 @@ try {
     $ciudad_nac = isset($datos['ciudad_nacimiento']) && !empty($datos['ciudad_nacimiento']) ? htmlspecialchars($datos['ciudad_nacimiento']) : (isset($datos['lugar_nacimiento']) ? htmlspecialchars($datos['lugar_nacimiento']) : '');
     $estado_nac = isset($datos['estado_nacimiento']) ? htmlspecialchars($datos['estado_nacimiento']) : '';
 
-    $ruta_icono = '../recursos/img/church.png';
-    $icono_base64 = 'data:image/png;base64,' . base64_encode(file_get_contents($ruta_icono));
+    $ruta_icono = '../recursos/img/logo.jpeg';
+    $icono_base64 = 'data:image/jpeg;base64,' . base64_encode(file_get_contents($ruta_icono));
 
     /* Estilos globales */
     $css_global = '
         <style>
-            body { font-family: "Times New Roman", Times, serif; color: #000; margin: 25px 40px; }
+            body { font-family: "Times New Roman", Times, serif; color: #000; margin: 15px 35px; }
             .centro { text-align: center; }
             .negrita { font-weight: bold; }
             .linea { border-bottom: 1px solid #000; display: inline-block; padding: 0 5px; }
@@ -74,13 +74,13 @@ try {
             <title>Constancia de Bautismo - ' . htmlspecialchars($acta['nombre_principal']) . '</title>
             ' . $css_global . '
             <style>
-                .cuerpo-nacional { font-size: 17px; line-height: 2.2; margin-top: 20px; }
-                .firma-nacional { margin-top: 60px; text-align: center; font-size: 18px; }
+                .cuerpo-nacional { font-size: 16px; line-height: 1.9; margin-top: 12px; }
+                .firma-nacional { margin-top: 35px; text-align: center; font-size: 17px; }
             </style>
         </head>
         <body>
             <div class="centro">
-                <img src="' . $icono_base64 . '" style="width: 45px; margin-bottom: 5px;" />
+                <img src="' . $icono_base64 . '" style="width: 80px; margin-bottom: 6px;" />
 
                 <h2 style="margin:0; font-size: 22px;">Arquidiócesis de Ciudad Bolívar</h2>
                 <h3 style="margin:3px 0; font-size: 18px;">Parroquia Catedral</h3>
@@ -102,11 +102,11 @@ try {
                 <strong>Madrina:</strong> <span class="linea" style="min-width: 415px;">' . htmlspecialchars($datos['nombre_madrina']) . '</span><br>
             </div>
 
-            <div style="margin-top: 50px; font-size: 16px; text-align: justify; line-height: 1.5;">
+            <div style="margin-top: 25px; font-size: 16px; text-align: justify; line-height: 1.5;">
                 Se expide la presente Constancia como requisito para prepararse para la Primera Comunión y la Confirmación.
             </div>
 
-            <div style="margin-top: 30px; font-size: 18px;">
+            <div style="margin-top: 18px; font-size: 17px;">
                 Ciudad Bolívar <span class="linea" style="width: 40px; text-align: center;">'.$dia_hoy.'</span> 
                 de <span class="linea" style="width: 120px; text-align: center;">'.$mes_hoy.'</span> 
                 de <span class="linea" style="width: 60px; text-align: center;">'.$ano_hoy.'</span>
@@ -145,7 +145,7 @@ try {
             <div style="position: absolute; top: -10px; left: 0;">Nro. <strong>'. htmlspecialchars($acta['numero']) .'</strong></div>
 
             <div class="centro">
-                <img src="' . $icono_base64 . '" style="width: 45px; margin-bottom: 10px;" />
+                <img src="' . $icono_base64 . '" style="width: 80px; margin-bottom: 6px;" />
                 <h2>Arquidiócesis de Ciudad Bolívar</h2>
                 <h4 style="margin:0; font-size: 14px;">VENEZUELA</h4>
                 
@@ -196,8 +196,8 @@ try {
 
             <table class="tabla-firmas">
                 <tr>
-                    <td style="width: 50%; height: 70px; vertical-align: bottom;">
-                        <div style="width: 80px; height: 80px; border: 1px dotted #ccc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #999;">Sello</div>
+                    <td style="width: 50%; height: 45px; vertical-align: bottom;">
+                        <div style="width: 55px; height: 55px; border: 1px dotted #ccc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;">Sello</div>
                     </td>
                     <td style="width: 50%; vertical-align: bottom;">
                         _________________________________<br>
@@ -240,8 +240,8 @@ try {
     $dompdf->render();
     
     $nombre_descarga = "Bautismo_" . ucfirst($formato) . "_" . str_replace(' ', '_', $acta['nombre_principal']) . ".pdf";
-$descargar = (isset($_GET['descargar']) && $_GET['descargar'] == '1') ? true : false;
-$dompdf->stream($nombre_descarga, array("Attachment" => $descargar));
+    $dompdf->stream($nombre_descarga, array("Attachment" => false));
+
 } catch(Exception $e) {
     die("Error crítico al generar el PDF: " . $e->getMessage());
 }

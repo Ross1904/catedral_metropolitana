@@ -58,10 +58,10 @@ try {
     $str_estado_esposo = ($estado_civil_esposo === 'Viudo') ? "Viudo de: <span class='linea' style='min-width: 150px;'>$viudo_de_esposo</span>" : "$estado_civil_esposo,";
     $str_estado_esposa = ($estado_civil_esposa === 'Viuda') ? "Viuda de: <span class='linea' style='min-width: 150px;'>$viuda_de_esposa</span>" : "$estado_civil_esposa,";
 
-    $ruta_icono = '../recursos/img/church.png';
+    $ruta_icono = '../recursos/img/logo.jpeg';
     $icono_base64 = '';
     if(file_exists($ruta_icono)){
-        $icono_base64 = 'data:image/png;base64,' . base64_encode(file_get_contents($ruta_icono));
+        $icono_base64 = 'data:image/jpeg;base64,' . base64_encode(file_get_contents($ruta_icono));
     }
 
     /* BUFFER HTML */
@@ -73,16 +73,16 @@ try {
         <meta charset="UTF-8">
         <title>Certificado de Matrimonio - <?php echo $nombre_esposo; ?> y <?php echo $nombre_esposa; ?></title>
         <style>
-            body { font-family: "Times New Roman", Times, serif; color: #000; margin: 25px 40px; font-size: 13px; }
+            body { font-family: "Times New Roman", Times, serif; color: #000; margin: 15px 35px; font-size: 13px; }
             .centro { text-align: center; }
             .negrita { font-weight: bold; }
             .linea { border-bottom: 1px solid #000; display: inline-block; padding: 0 5px; }
-            .cuerpo-exterior { text-align: justify; line-height: 1.6; margin-top: 15px; }
-            .datos-libro { text-align: right; font-size: 13px; margin-bottom: 10px; }
-            .tabla-firmas { width: 100%; margin-top: 15px; text-align: center; }
-            .autenticacion { margin-top: 15px; border-top: 1px dashed #000; padding-top: 10px; font-size: 13px; line-height: 1.5; }
-            h1 { font-size: 20px !important; margin: 10px 0 5px 0 !important; }
-            h2 { font-size: 18px !important; margin: 0 !important; }
+            .cuerpo-exterior { text-align: justify; line-height: 1.5; margin-top: 10px; }
+            .datos-libro { text-align: right; font-size: 13px; margin-bottom: 8px; }
+            .tabla-firmas { width: 100%; margin-top: 12px; text-align: center; }
+            .autenticacion { margin-top: 12px; border-top: 1px dashed #000; padding-top: 8px; font-size: 13px; line-height: 1.4; }
+            h1 { font-size: 18px !important; margin: 6px 0 4px 0 !important; }
+            h2 { font-size: 16px !important; margin: 0 !important; }
         </style>
     </head>
     <body>
@@ -90,7 +90,7 @@ try {
 
         <div class="centro">
             <?php if($icono_base64): ?>
-            <img src="<?php echo $icono_base64; ?>" style="width: 45px; margin-bottom: 10px;" />
+            <img src="<?php echo $icono_base64; ?>" style="width: 80px; margin-bottom: 5px;" />
             <?php endif; ?>
             <h2>Arquidiócesis de Ciudad Bolívar</h2>
             <h4 style="margin:0; font-size: 14px;">VENEZUELA</h4>
@@ -147,8 +147,8 @@ try {
 
         <table class="tabla-firmas">
             <tr>
-                <td style="width: 50%; height: 70px; vertical-align: bottom;">
-                    <div style="width: 80px; height: 80px; border: 1px dotted #ccc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #999;">Sello</div>
+                <td style="width: 50%; height: 45px; vertical-align: bottom;">
+                    <div style="width: 55px; height: 55px; border: 1px dotted #ccc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;">Sello</div>
                 </td>
                 <td style="width: 50%; vertical-align: bottom;">
                     _________________________________<br>

@@ -1,28 +1,11 @@
 <?php
-require_once '../php/config_sesion.php';
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/**
- * Si el usuario llega a la pantalla de login con una sesión activa
- * (por ejemplo, porque el navegador restauró cookies tras cerrarse
- * de forma no estándar), NO lo redirigimos automáticamente a inicio.php.
- * Llegar a login.php es una señal explícita de que se quiere autenticar
- * de nuevo, así que cerramos cualquier sesión residual.
- */
 if (isset($_SESSION['usuario_id'])) {
-    $_SESSION = [];
-    if (ini_get("session.use_cookies")) {
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
-        );
-    }
-    session_destroy();
-    session_start();
+    header("Location: inicio.php");
+    exit();
 }
 
 if (isset($_SESSION['flash_mensaje'])) {
@@ -55,11 +38,13 @@ if (isset($_SESSION['flash_mensaje'])) {
                 
                 <style>
                     .icono-flotante-login {
-                        font-size: 4rem;
-                        color: var(--acento-dorado);
-                        margin-bottom: 15px;
-                        animation: flotarLogin 3s ease-in-out infinite;
-                        filter: drop-shadow(0 0 18px rgba(235, 206, 78, 0.87));
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        object-position: center center;
+                        border-radius: 50%;
+                        display: block;
+                        mix-blend-mode: multiply;
                     }
                     
                     @keyframes flotarLogin {
@@ -94,7 +79,17 @@ if (isset($_SESSION['flash_mensaje'])) {
                     }
                 </style>
                 
-                <i class="fas fa-church icono-flotante-login"></i>
+                <div style="
+                    width: 155px;
+                    height: 155px;
+                    border-radius: 50%;
+                    margin: 0 auto 15px auto;
+                    animation: flotarLogin 3s ease-in-out infinite;
+                    filter: drop-shadow(0 0 20px rgba(235, 206, 78, 0.7));
+                    overflow: hidden;
+                ">
+                    <img src="../recursos/img/logo.jpeg" class="icono-flotante-login" alt="Escudo Parroquial">
+                </div>
                 <h2 class="titulo-login-oficial">Santo Tomás Apóstol</h2>
                 <p class="subtitulo-login-oficial">Gestión Parroquial</p>
                 

@@ -355,15 +355,20 @@ unset($_SESSION['modulo_activo']);
                 <button class="boton-navegacion-calendario" id="btn-mes-anterior" title="Mes Anterior">
                     <i class="fas fa-chevron-left"></i>
                 </button>
+                
                 <h3 id="mes-anio-display" style="transition: all 0.3s ease;">Cargando...</h3>
+                
                 <button class="boton-navegacion-calendario" id="btn-mes-siguiente" title="Mes Siguiente">
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
+            
             <div class="calendario-dias-semana">
                 <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
             </div>
-            <div class="calendario-cuadricula" id="cuadricula-dias"></div>
+            
+            <div class="calendario-cuadricula" id="cuadricula-dias">
+                </div>
         </div>
     </section>
 
@@ -374,17 +379,11 @@ unset($_SESSION['modulo_activo']);
                 <p style="margin:0; opacity:0.8;">Gestión de catequesis, grupos de devoción y reuniones regulares.</p>
             </div>
             
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
-                <?php if($esSecretario): ?>
-                <button class="boton-crear-sagrado" onclick="abrirModal('modal-actividad')" style="margin: 0;">
-                    <i class="fas fa-cross"></i> Nueva Actividad
-                </button>
-                <?php endif; ?>
-                <div style="position: relative; width: 100%; max-width: 320px;">
-                    <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
-                    <input type="text" id="buscador-formacion" onkeyup="filtrarFormacion()" class="input-estilo-catedral" placeholder="Buscar actividad, categoría, lugar..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                </div>
-            </div>
+            <?php if($esSecretario): ?>
+            <button class="boton-crear-sagrado" onclick="abrirModal('modal-actividad')">
+                <i class="fas fa-cross"></i> Nueva Actividad
+            </button>
+            <?php endif; ?>
         </div>
         
         <div class="grid-actividades" id="lista-formacion">
@@ -446,11 +445,6 @@ unset($_SESSION['modulo_activo']);
             </button>
         </div>
         <?php endif; ?>
-
-        <div id="mensaje-sin-formacion" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
-            <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
-        </div>
-
     </section>
 
     <?php if($esSecretario): ?>
@@ -472,11 +466,6 @@ unset($_SESSION['modulo_activo']);
                 <button class="boton-sagrado-primario" onclick="abrirModal('modal-nueva-donacion')" style="margin: 0;">
                     <i class="fas fa-plus-circle"></i> Registrar Ingreso
                 </button>
-            </div>
-
-            <div style="position: relative; width: 100%; max-width: 320px;">
-                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
-                <input type="text" id="buscador-donaciones" onkeyup="filtrarDonaciones()" class="input-estilo-catedral" placeholder="Buscar por donante, tipo, método..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             </div>
 
             <div class="tarjeta-estadistica" style="border-left: 5px solid #6b9071; min-width: 250px; margin: 0; padding: 10px 10px;">
@@ -586,10 +575,6 @@ unset($_SESSION['modulo_activo']);
 </div>
 <?php endif; ?>
 
-<div id="mensaje-sin-donaciones" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
-    <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
-</div>
-
 </section>
 <?php endif; ?>
  
@@ -644,33 +629,20 @@ unset($_SESSION['modulo_activo']);
                 
             </div>
 
-            <div id="panel-exportacion" style="background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 0 15px; margin-bottom: 0; gap: 15px; align-items: center; justify-content: space-between; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-8px); transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.4s ease, margin 0.4s ease, transform 0.35s ease;">
+            <div id="panel-exportacion" style="display: none; background: rgba(198, 156, 109, 0.1); border: 1px solid var(--acento-dorado); border-radius: 8px; padding: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px; accent-color: var(--acento-dorado);">
-                    <label for="check-todos" class="label-formato-bautismo" style="font-weight: bold; cursor: pointer;">Seleccionar Todos</label>
-                    <span id="contador-seleccionados" class="label-formato-bautismo" style="margin-left: 15px; opacity: 0.75; font-size: 0.9rem;">0 seleccionados</span>
+                    <input type="checkbox" id="check-todos" onclick="toggleAllChecks(this)" style="transform: scale(1.5); cursor: pointer; margin-left: 5px;">
+                    <label for="check-todos" style="font-weight: bold; cursor: pointer; color: var(--texto-principal);">Seleccionar Todos</label>
+                    <span id="contador-seleccionados" style="margin-left: 15px; opacity: 0.8; font-size: 0.9rem;">0 seleccionados</span>
                 </div>
                 
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <label class="label-formato-bautismo" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">
-                            <i class="fas fa-file-alt" style="color: var(--acento-dorado);"></i> Formato Bautismo:
-                        </label>
-                        <div class="select-personalizado-catedral" style="min-width: 185px;">
-                            <input type="hidden" id="formato-lote-bautismo" value="nacional">
-                            <div class="select-trigger-catedral" onclick="toggleSelectCatedral(this)">
-                                <span class="select-texto" id="formato-bautismo-texto">Nacional</span>
-                                <i class="fas fa-chevron-down select-icono"></i>
-                            </div>
-                            <ul class="select-opciones-catedral">
-                                <li onclick="seleccionarFormatoBautismo(this, 'nacional', 'Nacional')">
-                                    <i class="fas fa-flag" style="color: var(--acento-dorado); margin-right: 8px;"></i> Nacional
-                                </li>
-                                <li onclick="seleccionarFormatoBautismo(this, 'exterior', 'Para el Exterior')">
-                                    <i class="fas fa-globe" style="color: var(--acento-dorado); margin-right: 8px;"></i> Para el Exterior
-                                </li>
-                            </ul>
-                        </div>
+                    <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label for="formato-lote-bautismo" style="font-size: 0.9rem; font-weight: bold; color: #555;">Formato Bautismos:</label>
+                        <select id="formato-lote-bautismo" style="border: none; outline: none; background: transparent; font-size: 0.9rem; color: var(--texto-principal);">
+                            <option value="nacional">Nacional</option>
+                            <option value="exterior">Para el Exterior</option>
+                        </select>
                     </div>
 
                     <button class="boton-sagrado-primario" onclick="descargarLote()" style="background: #2c3e50; border-color: #1a252f; margin: 0;">
@@ -688,7 +660,6 @@ unset($_SESSION['modulo_activo']);
                             </th>
                             <th>Nro. Acta</th>
                             <th>Nombre Principal</th>
-                            <th>Nombre Sacramento</th>
                             <th>Fecha Sacramento</th>
                             <th>Libro/Folio</th>
                             <th style="text-align: center;">Acción</th>
@@ -727,7 +698,6 @@ try {
             echo "<tr class='fila-archivo' data-tipo='$tipo' style='display: none;'>";
             echo "<td class='col-check' style='display: none; text-align: center;'><input type='checkbox' class='check-doc' data-url='$urlDescarga' onclick='actualizarContador()' style='transform: scale(1.3); cursor: pointer;'></td>";
             echo "<td><b>$num</b></td>";
-            echo "<td style='text-transform: uppercase;'>$nom</td>";
             echo "<td style='text-transform: uppercase;'>$nom</td>";
             echo "<td>$fec_vista</td>";
             echo "<td>L: $lib | F: $fol</td>";
@@ -1100,18 +1070,12 @@ try {
 
     <?php if($esAdmin): ?>
     <section id="mod-gestion-usuarios" class="modulo">
-        <div class="encabezado-modulo" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-            <div>
-                <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
-                <p style="margin: 0; opacity: 0.8;">Administre los accesos y roles de las personas registradas en el sistema.</p>
-            </div>
-            <div style="position: relative; width: 100%; max-width: 320px;">
-                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--acento-dorado); font-size: 1.1rem; z-index: 10;"></i>
-                <input type="text" id="buscador-usuarios" onkeyup="filtrarUsuarios()" class="input-estilo-catedral" placeholder="Buscar por nombre, usuario, rol..." style="margin: 0; padding-left: 45px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            </div>
+        <div class="encabezado-modulo">
+            <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+            <p style="margin: 0; opacity: 0.8;">Administre los accesos y roles de las personas registradas en el sistema.</p>
         </div>
 
-        <div class="cuadricula-tarjetas" id="contenedor-tarjetas-usuarios" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+        <div class="cuadricula-tarjetas" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
             <?php foreach($listaUsuarios as $user):
                 $rolId = $user['id_rol'];
                 
@@ -1132,7 +1096,7 @@ try {
                     $colorBorde = '#6b9071';
                 }
             ?>
-            <div class="tarjeta-ofrenda item-usuario" style="border-left: 4px solid <?php echo $colorBorde; ?>;">
+            <div class="tarjeta-ofrenda" style="border-left: 4px solid <?php echo $colorBorde; ?>;">
                 <div class="ofrenda-cabecera">
                     <span style="font-weight: bold; font-size: 1.1rem;"><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($user['usuario']); ?></span>
                     <span class="ofrenda-metodo <?php echo $badgeClase; ?>"><i class="fas <?php echo $iconoRol; ?>"></i> <?php echo $rolTexto; ?></span>
@@ -1161,10 +1125,6 @@ try {
                 </div>
             </div>
             <?php endforeach; ?>
-        </div>
-
-        <div id="mensaje-sin-usuarios" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc; margin-top: 20px; border-radius: 8px;">
-            <p style="color: #555; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados.</p>
         </div>
     </section>
     <?php endif; ?>
@@ -1320,29 +1280,6 @@ try {
         
     </div>
     <?php endif; ?>
-
-    <!-- PANEL LATERAL - ACTIVIDADES DE AGENDA POR MES -->
-    <div id="panel-agenda-mes" class="panel-lateral-derecho">
-        <div class="panel-lateral-cabecera" style="display: flex; flex-direction: column; gap: 15px; padding-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 style="margin: 0;"><i class="fas fa-list-ul"></i> Actividades del Mes</h3>
-                <button class="btn-cerrar-panel" onclick="togglePanelAgendaMes()"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; background: rgba(198, 156, 109, 0.08); border-radius: 8px; padding: 8px 12px;">
-                <button onclick="panelAgendaMesAnterior()" style="background: none; border: 1px solid rgba(198,156,109,0.4); color: var(--acento-dorado); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: transform 0.15s ease, background 0.2s;" onmouseover="this.style.background='rgba(198,156,109,0.15)'" onmouseout="this.style.background='none'" onmousedown="this.style.transform='scale(0.88)'" onmouseup="this.style.transform='scale(1)'">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <span id="panel-agenda-mes-label" style="font-weight: bold; font-size: 1rem; color: var(--texto-principal);"></span>
-                <button onclick="panelAgendaMesSiguiente()" style="background: none; border: 1px solid rgba(198,156,109,0.4); color: var(--acento-dorado); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: transform 0.15s ease, background 0.2s;" onmouseover="this.style.background='rgba(198,156,109,0.15)'" onmouseout="this.style.background='none'" onmousedown="this.style.transform='scale(0.88)'" onmouseup="this.style.transform='scale(1)'">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="panel-lateral-cuerpo" id="lista-eventos-agenda-mes">
-        </div>
-    </div>
 
     <div id="modal-agenda" class="modal-catedral">
         <div class="modal-contenido">
@@ -2106,7 +2043,7 @@ try {
                 <button class="btn-cerrar-modal" onclick="cerrarModal('modal-admin-editar-usuario')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-cuerpo">
-                <form id="form-admin-editar-usuario" method="POST" action="../php/controlador.php" autocomplete="off" onsubmit="return interceptarCambioRol(event)">
+                <form method="POST" action="../php/controlador.php" autocomplete="off">
                     <input type="hidden" name="accion" value="admin-editar-usuario">
                     <input type="hidden" name="usuario-id" id="admin-edit-user-id">
 
@@ -2141,35 +2078,6 @@ try {
                         <button type="submit" class="boton-sagrado-primario"><i class="fas fa-save"></i> Guardar Cambios</button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmación con contraseña para cambio de propio rol -->
-    <div id="modal-confirmar-cambio-rol" class="modal-catedral">
-        <div class="modal-contenido" style="max-width: 420px; border-top: 5px solid var(--acento-dorado);">
-            <div class="modal-cabecera">
-                <h3 style="color: var(--acento-dorado);"><i class="fas fa-shield-alt"></i> Confirmar cambio de rol</h3>
-                <button class="btn-cerrar-modal" onclick="cerrarModal('modal-confirmar-cambio-rol')"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-cuerpo" style="text-align: center;">
-                <i class="fas fa-user-cog" style="font-size: 3rem; color: var(--acento-dorado); margin-bottom: 15px; display: block;"></i>
-                <p style="margin-bottom: 8px; line-height: 1.6;">Está a punto de cambiar <strong>su propio rol</strong> a <strong id="texto-nuevo-rol" style="color: var(--acento-dorado);"></strong>.</p>
-                <p style="margin-bottom: 20px; font-size: 0.88rem; opacity: 0.75; line-height: 1.5;">Esta acción modificará sus propios permisos dentro del sistema. Confirme con su contraseña para continuar.</p>
-                <div class="grupo-entrada" style="text-align: left;">
-                    <label style="font-weight: bold; margin-bottom: 5px; display: block;">Contraseña:</label>
-                    <div class="contenedor-clave">
-                        <input type="password" id="pass-confirmar-cambio-rol" class="input-estilo-catedral" placeholder="Ingrese su contraseña" autocomplete="new-password">
-                        <i class="fas fa-eye icono-ver-clave" onclick="toggleclave('pass-confirmar-cambio-rol', this)" title="Mostrar contraseña"></i>
-                    </div>
-                    <p id="error-pass-cambio-rol" style="color: var(--acento-rojo); font-size: 0.85rem; margin-top: 6px; display: none;"><i class="fas fa-exclamation-circle"></i> La contraseña no puede estar vacía.</p>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
-                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-confirmar-cambio-rol')">Cancelar</button>
-                    <button type="button" class="boton-sagrado-primario" onclick="confirmarYEnviarCambioRol()" style="background: var(--acento-dorado); border-color: var(--acento-dorado); color: #1a2238;">
-                        <i class="fas fa-check"></i> Confirmar cambio
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -2819,39 +2727,6 @@ try {
         </div>
     </div>
 
-<div id="modal-descarga-lote" class="modal-catedral">
-        <div class="modal-contenido" style="max-width: 420px; text-align: center; border-top: 5px solid var(--acento-dorado);">
-            <div class="modal-cuerpo modal-descarga-cuerpo" style="padding: 30px 25px;">
-                <i id="icono-descarga-lote" class="fas fa-cloud-download-alt" style="font-size: 3.5rem; color: var(--acento-dorado); margin-bottom: 18px; display: block;"></i>
-
-                <h3 id="titulo-descarga-lote" class="texto-modal-descarga" style="margin-top: 0;">Preparando descarga</h3>
-
-                <p id="texto-descarga-lote" class="texto-modal-descarga" style="margin-bottom: 20px; line-height: 1.5; opacity: 0.85; font-size: 0.92rem;">
-                    Se iniciará la descarga de los documentos seleccionados. Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar.
-                </p>
-
-                <div style="background: rgba(198, 156, 109, 0.15); border-radius: 20px; height: 10px; overflow: hidden; margin-bottom: 10px;">
-                    <div id="barra-progreso-descarga" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--acento-dorado), #a87f55); border-radius: 20px; transition: width 0.4s ease;"></div>
-                </div>
-                <p id="contador-progreso-descarga" class="texto-modal-descarga" style="font-size: 0.85rem; opacity: 0.75; margin-bottom: 20px;">0 de 0 documentos</p>
-
-                <div id="zona-botones-descarga-lote" style="display: flex; gap: 10px; justify-content: center;">
-                    <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote')">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        /* Etiquetas del panel de exportación — responden al modo oscuro */
-        .label-formato-bautismo { color: var(--texto-claro); }
-        body.oscuro .label-formato-bautismo { color: var(--texto-oscuro); }
-
-        /* Texto del modal de descarga: hereda correctamente en ambos modos */
-        .texto-modal-descarga { color: var(--texto-claro); }
-        body.oscuro .texto-modal-descarga { color: var(--texto-oscuro); }
-    </style>
-
 <div id="modal-confirmar-eliminar-acta" class="modal-catedral">
         <div class="modal-contenido" style="max-width: 400px; text-align: center; border-top: 5px solid var(--acento-rojo);">
             <div class="modal-cuerpo" style="padding: 30px 20px;">
@@ -3011,10 +2886,6 @@ try {
     </button>
     <?php endif; ?>
 
-    <button class="boton-flotante-actividad" id="btn-flotante-agenda-mes" onclick="togglePanelAgendaMes()" title="Actividades del Mes" style="right: <?php echo $esSecretario ? '105px' : '30px'; ?>; display: none; align-items: center; justify-content: center;">
-        <i class="fas fa-calendar-alt" style="line-height: 1;"></i>
-    </button>
-
     <script>
         window.idActaParaBorrar = null;
 
@@ -3036,94 +2907,7 @@ try {
 
 
 
-        /* FILTROS DE BÚSQUEDA - FORMACIÓN Y GRUPOS */
-        function filtrarFormacion() {
-            let filtro = document.getElementById("buscador-formacion").value.toLowerCase();
-            let items = document.querySelectorAll("#lista-formacion .item-formacion");
-            let encontrados = 0;
-
-            items.forEach(function(item) {
-                let texto = item.textContent.toLowerCase();
-                if (texto.includes(filtro)) {
-                    item.style.display = "";
-                    encontrados++;
-                } else {
-                    item.style.display = "none";
-                }
-            });
-
-            let msg = document.getElementById("mensaje-sin-formacion");
-            if (msg) {
-                if (encontrados === 0) {
-                    msg.innerHTML = filtro !== ""
-                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
-                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay actividades registradas.</p>`;
-                    msg.style.display = "block";
-                } else {
-                    msg.style.display = "none";
-                }
-            }
-        }
-
-        /* FILTROS DE BÚSQUEDA - DIEZMOS Y OFRENDAS */
-        function filtrarDonaciones() {
-            let filtro = document.getElementById("buscador-donaciones").value.toLowerCase();
-            let items = document.querySelectorAll("#contenedor-tarjetas-donaciones .item-donacion");
-            let encontrados = 0;
-
-            items.forEach(function(item) {
-                let texto = item.textContent.toLowerCase();
-                if (texto.includes(filtro)) {
-                    item.style.display = "";
-                    encontrados++;
-                } else {
-                    item.style.display = "none";
-                }
-            });
-
-            let msg = document.getElementById("mensaje-sin-donaciones");
-            if (msg) {
-                if (encontrados === 0) {
-                    msg.innerHTML = filtro !== ""
-                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
-                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay donaciones registradas.</p>`;
-                    msg.style.display = "block";
-                } else {
-                    msg.style.display = "none";
-                }
-            }
-        }
-
-        /* FILTROS DE BÚSQUEDA - GESTIÓN DE USUARIOS */
-        function filtrarUsuarios() {
-            let filtro = document.getElementById("buscador-usuarios").value.toLowerCase();
-            let items = document.querySelectorAll("#contenedor-tarjetas-usuarios .item-usuario");
-            let encontrados = 0;
-
-            items.forEach(function(item) {
-                let texto = item.textContent.toLowerCase();
-                if (texto.includes(filtro)) {
-                    item.style.display = "";
-                    encontrados++;
-                } else {
-                    item.style.display = "none";
-                }
-            });
-
-            let msg = document.getElementById("mensaje-sin-usuarios");
-            if (msg) {
-                if (encontrados === 0) {
-                    msg.innerHTML = filtro !== ""
-                        ? `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-search"></i> No se encontraron resultados para "<b>${filtro}</b>".</p>`
-                        : `<p style="color: var(--texto-claro); opacity: 0.7; font-size: 1.1rem;"><i class="fas fa-info-circle"></i> No hay usuarios registrados.</p>`;
-                    msg.style.display = "block";
-                } else {
-                    msg.style.display = "none";
-                }
-            }
-        }
-
-        /* FILTRO DE BÚSQUEDA - ARCHIVOS */
+        /* FILTRO DE BÚSQUEDA */
         function filtrarTablaArchivos() {
             let filtro = document.getElementById("buscador-archivos").value.toLowerCase();
             let filas = document.querySelectorAll("#tabla-registros-archivos tbody .fila-archivo");
@@ -3258,7 +3042,6 @@ try {
 
         function cerrarSalaSecreta() {
             cerrarModal('modal-easter-egg'); clearInterval(gameLoop); stopMusic();
-            detenerCaos();
             window.removeEventListener('keydown', controladorKeyDown);
             window.removeEventListener('keyup', controladorKeyUp);
             for(let key in teclas) teclas[key] = false;
@@ -3333,19 +3116,17 @@ try {
 
         function volverMenuJuegos() {
             clearInterval(gameLoop); stopMusic(); estadoJuego = 'detenido';
-            detenerCaos();
             document.getElementById('menu-juegos').style.display = 'block';
             document.getElementById('pantalla-juego').style.display = 'none';
         }
 
         function prepararJuego(tipo) {
             juegoActual = tipo;
-            detenerCaos(); // limpiar caos de partida anterior
             document.getElementById('menu-juegos').style.display = 'none';
             document.getElementById('pantalla-juego').style.display = 'block';
             
             if(tipo === 'panes') {
-                document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: gold">Flechas o A/D ⬅️ ➡️</strong> atrapar.<br><span style="font-size:0.75rem; color:#ff8c00;">⚠️ ¡Cuidado! La cámara enloquecerá cada ~20s</span><br><span style="font-size:0.8rem;">ESPACIO Iniciar</span>';
+                document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: gold">Flechas o A/D ⬅️ ➡️</strong> atrapar.<br> <span style="font-size:0.8rem;">ESPACIO Iniciar</span>';
                 canvas.style.background = 'linear-gradient(to bottom, #0f2027, #203a43, #2c5364)';
             } else if(tipo === 'flappy') {
                 document.getElementById('instrucciones-juego').innerHTML = '<strong style="color: #87CEEB">ESPACIO, ⬆️ o W</strong> volar.';
@@ -3412,195 +3193,25 @@ try {
         }
 
         /* JUEGO 1: PANES*/
-        /* ====== SISTEMA DE CAOS DE CÁMARA - MILAGRO DE LOS PANES ====== */
-        let caosActual = null;         // efecto activo
-        let caosTimer = null;          // timeout para el próximo caos
-        let caosTimeout = null;        // timeout para finalizar efecto actual
-        let sacudidaFrame = 0;         // frame counter para shake
-        let caosMensajeTimer = null;   // timeout para el mensaje HUD
-
-        const EFECTOS_CAOS = [
-            { id: 'invertir_h',   nombre: '¡ESPEJO!',         duracion: 8000  },
-            { id: 'invertir_v',   nombre: '¡AL REVÉS!',       duracion: 8000  },
-            { id: 'rotar_90',     nombre: '¡GIRO 90°!',       duracion: 7000  },
-            { id: 'rotar_270',    nombre: '¡GIRO -90°!',      duracion: 7000  },
-            { id: 'rotar_180',    nombre: '¡CABEZA ABAJO!',   duracion: 8000  },
-            { id: 'sacudir',      nombre: '¡TERREMOTO!',      duracion: 5000  },
-            { id: 'controles_inv',nombre: '¡CONTROLES LOCOS!',duracion: 9000  },
-            { id: 'zoom_out',     nombre: '¡ALEJÁNDOSE!',     duracion: 7000  },
-        ];
-
-        let caosControlesInvertidos = false;
-        let caosMensajeActual = '';
-        let caosMensajeOpacidad = 0;
-
-        function dispararCaos() {
-            if (juegoActual !== 'panes') return;
-
-            // Elegir efecto aleatorio distinto al actual
-            let candidatos = EFECTOS_CAOS.filter(e => !caosActual || e.id !== caosActual.id);
-            let efecto = candidatos[Math.floor(Math.random() * candidatos.length)];
-            caosActual = efecto;
-            caosControlesInvertidos = (efecto.id === 'controles_inv');
-
-            // Mostrar mensaje HUD con el nombre del efecto
-            caosMensajeActual = efecto.nombre;
-            caosMensajeOpacidad = 1.0;
-
-            // Programar fin del efecto
-            clearTimeout(caosTimeout);
-            caosTimeout = setTimeout(() => {
-                caosActual = null;
-                caosControlesInvertidos = false;
-                caosMensajeActual = '';
-            }, efecto.duracion);
-
-            // Programar siguiente caos (entre 18 y 24 segundos)
-            clearTimeout(caosTimer);
-            caosTimer = setTimeout(dispararCaos, 18000 + Math.random() * 6000);
-        }
-
-        function iniciarTimerCaos() {
-            clearTimeout(caosTimer);
-            clearTimeout(caosTimeout);
-            caosActual = null;
-            caosControlesInvertidos = false;
-            // Primer caos entre 15 y 22 segundos de juego
-            caosTimer = setTimeout(dispararCaos, 15000 + Math.random() * 7000);
-        }
-
-        function detenerCaos() {
-            clearTimeout(caosTimer);
-            clearTimeout(caosTimeout);
-            caosActual = null;
-            caosControlesInvertidos = false;
-            caosMensajeActual = '';
-            sacudidaFrame = 0;
-        }
-
-        function aplicarTransformCaos(canvas_w, canvas_h) {
-            if (!caosActual) return;
-            const cx = canvas_w / 2, cy = canvas_h / 2;
-            sacudidaFrame++;
-
-            switch(caosActual.id) {
-                case 'invertir_h':
-                    ctx.translate(canvas_w, 0); ctx.scale(-1, 1); break;
-                case 'invertir_v':
-                    ctx.translate(0, canvas_h); ctx.scale(1, -1); break;
-                case 'rotar_90':
-                    ctx.translate(cx, cy); ctx.rotate(Math.PI / 2); ctx.translate(-cy, -cx); break;
-                case 'rotar_270':
-                    ctx.translate(cx, cy); ctx.rotate(-Math.PI / 2); ctx.translate(-cy, -cx); break;
-                case 'rotar_180':
-                    ctx.translate(cx, cy); ctx.rotate(Math.PI); ctx.translate(-cx, -cy); break;
-                case 'sacudir':
-                    const amp = 6;
-                    const sx = Math.sin(sacudidaFrame * 0.8) * amp;
-                    const sy = Math.cos(sacudidaFrame * 1.1) * amp;
-                    ctx.translate(sx, sy); break;
-                case 'controles_inv':
-                    // sin transformación visual, solo los controles cambian
-                    break;
-                case 'zoom_out':
-                    ctx.translate(cx, cy); ctx.scale(0.65, 0.65); ctx.translate(-cx, -cy); break;
-            }
-        }
-
-        function dibujarHUDCaos() {
-            if (!caosMensajeActual && caosMensajeOpacidad <= 0) return;
-            if (caosMensajeOpacidad > 0) {
-                // Fade out gradual cuando ya no hay efecto activo
-                if (!caosActual) caosMensajeOpacidad = Math.max(0, caosMensajeOpacidad - 0.02);
-
-                ctx.save();
-                ctx.globalAlpha = caosMensajeOpacidad;
-                ctx.font = 'bold 22px "Segoe UI", Arial';
-                ctx.textAlign = 'center';
-                // Fondo semitransparente
-                const tw = ctx.measureText(caosMensajeActual || '').width;
-                ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                ctx.beginPath();
-                ctx.roundRect(200 - tw/2 - 14, 168, tw + 28, 38, 8);
-                ctx.fill();
-                // Texto con borde dorado
-                ctx.strokeStyle = '#C69C6D';
-                ctx.lineWidth = 3;
-                ctx.strokeText(caosMensajeActual || '', 200, 193);
-                ctx.fillStyle = '#FFD700';
-                ctx.fillText(caosMensajeActual || '', 200, 193);
-                ctx.restore();
-            }
-        }
-
-        /* Indicador visual de controles invertidos */
-        function dibujarIndicadorControles() {
-            if (!caosControlesInvertidos) return;
-            ctx.save();
-            ctx.font = '13px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(255,80,80,0.9)';
-            ctx.fillText('← → INVERTIDOS', 200, 20);
-            ctx.restore();
-        }
-
-        /* ====== FIN SISTEMA DE CAOS ====== */
-
         let vidasPanes=3, cristoX=175, itemsPanes=[];
-        function iniciarPanes() {
-            itemsPanes=[]; vidasPanes=3; cristoX=175;
-            iniciarTimerCaos();
-            actualizarScoreUI();
-            gameLoop=setInterval(loopPanes, 40);
-        }
+        function iniciarPanes() { itemsPanes=[]; vidasPanes=3; cristoX=175; actualizarScoreUI(); gameLoop=setInterval(loopPanes, 40); }
         function loopPanes() {
-            // Movimiento con posible inversión de controles
-            const irIzq = caosControlesInvertidos
-                ? (teclas['ArrowRight'] || teclas['KeyD'])
-                : (teclas['ArrowLeft']  || teclas['KeyA']);
-            const irDer = caosControlesInvertidos
-                ? (teclas['ArrowLeft']  || teclas['KeyA'])
-                : (teclas['ArrowRight'] || teclas['KeyD']);
-
-            if(irIzq && cristoX > 10)  cristoX -= 18;
-            if(irDer && cristoX < 340) cristoX += 18;
-
-            ctx.clearRect(0,0,400,400);
-
-            // Aplicar transformación de caos
-            ctx.save();
-            aplicarTransformCaos(400, 400);
-
-            // Fondo decorativo
-            ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.fillRect(50,50,2,2); ctx.fillRect(150,120,2,2);
-
-            // Dibujar personaje (Cristo)
+            if((teclas['ArrowLeft'] || teclas['KeyA']) && cristoX > 10) cristoX -= 18; 
+            if((teclas['ArrowRight'] || teclas['KeyD']) && cristoX < 340) cristoX += 18;
+            
+            ctx.clearRect(0,0,400,400); ctx.fillStyle="rgba(255, 255, 255, 0.2)"; ctx.fillRect(50,50,2,2); ctx.fillRect(150,120,2,2);
             ctx.beginPath(); ctx.arc(cristoX+25,340,18,0,Math.PI*2); ctx.strokeStyle="gold"; ctx.lineWidth=3; ctx.stroke();
             ctx.beginPath(); ctx.arc(cristoX+25,345,12,0,Math.PI*2); ctx.fillStyle="#f1c27d"; ctx.fill();
             ctx.fillStyle="#fff"; ctx.fillRect(cristoX+10,355,30,45); ctx.strokeStyle="#f1c27d"; ctx.lineWidth=5;
             ctx.beginPath(); ctx.moveTo(cristoX+10,365); ctx.lineTo(cristoX-10,350); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(cristoX+40,365); ctx.lineTo(cristoX+60,350); ctx.stroke();
-
-            // Spawn items
-            if (Math.random() < 0.03 + (score * 0.0005))
-                itemsPanes.push({x: Math.random()*370, y: -30, speed: 2 + Math.random()*2 + (score*0.05), tipo: ['🍞','🐟'][Math.floor(Math.random()*2)]});
-
+            if (Math.random() < 0.03 + (score * 0.0005)) itemsPanes.push({x: Math.random()*370, y: -30, speed: 2 + Math.random()*2 + (score*0.05), tipo: ['🍞','🐟'][Math.floor(Math.random()*2)]});
             ctx.font='30px Arial';
             for(let i=0; i<itemsPanes.length; i++){
                 let p=itemsPanes[i]; p.y+=p.speed; ctx.fillText(p.tipo, p.x, p.y);
-                if(p.y>330 && p.y<390 && p.x+30 > cristoX-15 && p.x < cristoX+65){
-                    score++; itemsPanes.splice(i,1); i--; playRetroSound('score'); actualizarScoreUI();
-                } else if(p.y>400){
-                    vidasPanes--; itemsPanes.splice(i,1); i--; playRetroSound('hit'); actualizarScoreUI();
-                    if(vidasPanes<=0){ detenerCaos(); finJuego("La multitud fue alimentada.", `Atrapaste: ${score}`); }
-                }
+                if(p.y>330 && p.y<390 && p.x+30 > cristoX-15 && p.x < cristoX+65){ score++; itemsPanes.splice(i,1); i--; playRetroSound('score'); actualizarScoreUI(); }
+                else if(p.y>400){ vidasPanes--; itemsPanes.splice(i,1); i--; playRetroSound('hit'); actualizarScoreUI(); if(vidasPanes<=0) finJuego("La multitud fue alimentada.", `Atrapaste: ${score}`); }
             }
-
-            ctx.restore(); // Fin de transformación de caos
-
-            // HUD de caos (siempre sobre el canvas sin transformar)
-            dibujarHUDCaos();
-            dibujarIndicadorControles();
         }
 
         /* JUEGO 2: FLAPPY*/
@@ -3813,18 +3424,14 @@ try {
                 for (let i = 0; i < items.length; i++) {
                     if (i < itemsPorClic) {
                         items[i].style.display = ''; // Visible
-                        items[i].style.animation = '';
-                        items[i].style.opacity = '';
                     } else {
                         items[i].style.display = 'none'; // Oculto
-                        items[i].style.animation = '';
-                        items[i].style.opacity = '';
                     }
                 }
 
                 // Encender el botón si hay más elementos que el límite
                 if (items.length > itemsPorClic) {
-                    boton.style.display = 'inline-flex';
+                    boton.style.display = 'inline-block';
                 } else {
                     boton.style.display = 'none';
                 }
@@ -3840,23 +3447,9 @@ try {
             boton.addEventListener('click', function() {
                 const items = contenedor.getElementsByClassName(claseItem);
                 let mostradosEnEsteClic = 0;
-
-                // Pequeña animación de "pulso" en el botón al hacer clic
-                boton.classList.add('btn-vermas-clic');
-                setTimeout(() => boton.classList.remove('btn-vermas-clic'), 300);
-
-                let retardo = 0;
+                
                 for (let i = itemsVisibles; i < items.length; i++) {
-                    const item = items[i];
-                    item.style.display = '';
-                    item.style.opacity = '0';
-                    item.style.animation = 'none';
-                    // Forzar reflow para reiniciar la animación
-                    void item.offsetWidth;
-                    item.style.animation = `apareceVerMas 0.45s ease forwards`;
-                    item.style.animationDelay = (retardo * 70) + 'ms';
-                    retardo++;
-
+                    items[i].style.display = ''; 
                     mostradosEnEsteClic++;
                     itemsVisibles++;
                     if (mostradosEnEsteClic === itemsPorClic) break; 
@@ -3881,46 +3474,8 @@ try {
             botonMenu.addEventListener('click', function() {
                 // Al hacer clic en cualquier parte del menú, reiniciamos todo en secreto
                 funcionesReinicio.forEach(reset => reset());
-
-                // Mostrar el botón flotante de Agenda solo en el módulo de Calendario/Agenda
-                const btnAgendaMes = document.getElementById('btn-flotante-agenda-mes');
-                if (btnAgendaMes) {
-                    if (this.getAttribute('data-objetivo') === 'mod-calendario') {
-                        btnAgendaMes.style.display = 'flex';
-                    } else {
-                        btnAgendaMes.style.display = 'none';
-                        // Si el panel estaba abierto, lo cerramos al salir del módulo
-                        const panelAgenda = document.getElementById('panel-agenda-mes');
-                        if (panelAgenda) panelAgenda.classList.remove('abierto');
-                    }
-                }
-
-                // Forzar el reinicio de la animación de aparición del módulo activo.
-                // Esto garantiza que la transición se vea SIEMPRE, incluso si el
-                // navegador no la re-dispara solo por el cambio de display.
-                const objetivo = this.getAttribute('data-objetivo');
-                if (objetivo) {
-                    // Pequeño delay para esperar a que dashboard.js le añada la clase "activo"
-                    setTimeout(() => {
-                        const moduloActivo = document.getElementById(objetivo);
-                        if (moduloActivo) {
-                            moduloActivo.style.animation = 'none';
-                            void moduloActivo.offsetWidth; // forzar reflow
-                            moduloActivo.style.animation = 'aparecer 0.45s ease-out';
-                        }
-                    }, 10);
-                }
             });
         });
-
-        // Estado inicial: ocultar el botón si no arrancamos en el módulo de Calendario
-        (function inicializarVisibilidadBotonAgenda() {
-            const btnAgendaMes = document.getElementById('btn-flotante-agenda-mes');
-            if (!btnAgendaMes) return;
-            const moduloActivoInicial = document.querySelector('.item-menu.activo');
-            const esCalendarioActivo = moduloActivoInicial && moduloActivoInicial.getAttribute('data-objetivo') === 'mod-calendario';
-            btnAgendaMes.style.display = esCalendarioActivo ? 'flex' : 'none';
-        })();
 
     });
     </script>
@@ -3936,31 +3491,8 @@ function toggleModoExportacion() {
     const btn = document.getElementById('btn-modo-exportacion');
 
     if (modoExportacion) {
-        // Preparar el panel para medir su altura real antes de animar
         panel.style.display = 'flex';
-        panel.style.flexWrap = 'wrap';
-        panel.style.maxHeight = 'none';
-        const alturaReal = panel.scrollHeight;
-        panel.style.maxHeight = '0px';
-        void panel.offsetHeight; // forzar reflow
-
-        requestAnimationFrame(() => {
-            panel.style.maxHeight = alturaReal + 'px';
-            panel.style.opacity = '1';
-            panel.style.padding = '15px';
-            panel.style.marginBottom = '20px';
-            panel.style.transform = 'translateY(0)';
-        });
-
-        // Una vez termina la animación, dejamos la altura libre por si el contenido cambia
-        // y cambiamos overflow a visible para que el dropdown del select no quede recortado
-        setTimeout(() => { 
-            if (modoExportacion) {
-                panel.style.maxHeight = 'none';
-                panel.style.overflow = 'visible';
-            }
-        }, 420);
-
+        
         // ¡LA MAGIA AQUÍ! Al dejarlo vacío, respetamos el Flexbox/Grid de tu plantilla
         colsCheck.forEach(col => col.style.display = '');
         if (thCheck) thCheck.style.display = ''; 
@@ -3969,21 +3501,7 @@ function toggleModoExportacion() {
         btn.style.background = 'var(--acento-rojo)';
         btn.style.borderColor = 'var(--acento-rojo)';
     } else {
-        // Volvemos overflow a hidden antes de animar el cierre
-        panel.style.overflow = 'hidden';
-        // Volvemos a fijar la altura actual antes de colapsar, para que la transición tenga de dónde partir
-        panel.style.maxHeight = panel.scrollHeight + 'px';
-        void panel.offsetHeight; // forzar reflow
-
-        requestAnimationFrame(() => {
-            panel.style.maxHeight = '0px';
-            panel.style.opacity = '0';
-            panel.style.padding = '0 15px';
-            panel.style.marginBottom = '0';
-            panel.style.transform = 'translateY(-8px)';
-        });
-
-        setTimeout(() => { if (!modoExportacion) panel.style.display = 'none'; }, 400);
+        panel.style.display = 'none';
         
         // Volvemos a ocultarlos
         colsCheck.forEach(col => col.style.display = 'none');
@@ -4014,60 +3532,19 @@ function actualizarContador() {
     document.getElementById('contador-seleccionados').innerText = seleccionados + ' seleccionados';
 }
 
-let descargaLoteCancelada = false;
-
 async function descargarLote() {
     const checks = document.querySelectorAll('.check-doc:checked');
     if (checks.length === 0) {
-        mostrarNotificacionToast("Por favor, seleccione al menos un documento.", "error");
+        alert("Por favor, seleccione al menos un documento.");
         return;
     }
 
     // Leemos qué formato de bautismo eligió la persona
     const formatoBautismo = document.getElementById('formato-lote-bautismo').value;
 
-    // Referencias al modal personalizado
-    const icono = document.getElementById('icono-descarga-lote');
-    const titulo = document.getElementById('titulo-descarga-lote');
-    const texto = document.getElementById('texto-descarga-lote');
-    const barra = document.getElementById('barra-progreso-descarga');
-    const contador = document.getElementById('contador-progreso-descarga');
-    const zonaBotones = document.getElementById('zona-botones-descarga-lote');
-
-    // Estado inicial del modal
-    descargaLoteCancelada = false;
-    icono.className = 'fas fa-cloud-download-alt';
-    icono.style.color = 'var(--acento-dorado)';
-    titulo.textContent = 'Descargando documentos';
-    texto.textContent = 'Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar. Por favor espere.';
-    barra.style.background = 'linear-gradient(90deg, var(--acento-dorado), #a87f55)';
-    barra.style.width = '0%';
-    contador.textContent = `0 de ${checks.length} documentos`;
-    zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-secundario" onclick="cancelarDescargaLote()"><i class="fas fa-times"></i> Cancelar descarga</button>`;
-
-    abrirModal('modal-descarga-lote');
-
-    let completados = 0;
+    alert(`Se iniciará la descarga de ${checks.length} documentos.\n\nIMPORTANTE:\n1. Si el navegador muestra un aviso de "Intentando descargar múltiples archivos", dele a "Permitir".\n2. Si configuró su navegador, se guardarán automáticamente en su carpeta de Descargas.\n\nPor favor, espere a que terminen de bajar todos.`);
 
     for (let i = 0; i < checks.length; i++) {
-        if (descargaLoteCancelada) {
-            // Descarga interrumpida por el usuario
-            icono.className = 'fas fa-exclamation-triangle';
-            icono.style.color = 'var(--acento-rojo, #c0392b)';
-            titulo.textContent = 'Descarga interrumpida';
-            texto.textContent = `Se descargaron ${completados} de ${checks.length} documentos antes de cancelar. ¿Desea continuar con los documentos restantes?`;
-            barra.style.background = '#c0392b';
-
-            const restantes = checks.length - completados;
-            zonaBotones.innerHTML = `
-                <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote'); toggleModoExportacion();">No, finalizar</button>
-                <button type="button" class="boton-sagrado-primario" onclick="reanudarDescargaLote(${completados})">
-                    <i class="fas fa-redo"></i> Continuar (${restantes} restante${restantes !== 1 ? 's' : ''})
-                </button>
-            `;
-            return;
-        }
-
         let url = checks[i].getAttribute('data-url');
         
         if(url.includes('generar_bautismo_pdf')) {
@@ -4083,187 +3560,10 @@ async function descargarLote() {
         link.click(); 
         document.body.removeChild(link);
 
-        completados++;
-        barra.style.width = Math.round((completados / checks.length) * 100) + '%';
-        contador.textContent = `${completados} de ${checks.length} documentos`;
-
         await new Promise(r => setTimeout(r, 2000));
     }
-
-    // Estado final: éxito (solo si no fue cancelada)
-    if (!descargaLoteCancelada) {
-        icono.className = 'fas fa-check-circle';
-        icono.style.color = '#4caf50';
-        titulo.textContent = '¡Descarga completada!';
-        texto.textContent = `Se procesaron ${checks.length} documento${checks.length !== 1 ? 's' : ''} correctamente. Revise su carpeta de descargas.`;
-        zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-primario" onclick="cerrarModal('modal-descarga-lote')">Entendido</button>`;
-        
-        toggleModoExportacion();
-    }
-}
-
-function cancelarDescargaLote() {
-    descargaLoteCancelada = true;
-}
-
-async function reanudarDescargaLote(desdeIndice) {
-    const checks = document.querySelectorAll('.check-doc:checked');
-    const formatoBautismo = document.getElementById('formato-lote-bautismo').value;
-
-    const icono = document.getElementById('icono-descarga-lote');
-    const titulo = document.getElementById('titulo-descarga-lote');
-    const texto = document.getElementById('texto-descarga-lote');
-    const barra = document.getElementById('barra-progreso-descarga');
-    const contador = document.getElementById('contador-progreso-descarga');
-    const zonaBotones = document.getElementById('zona-botones-descarga-lote');
-
-    descargaLoteCancelada = false;
-    icono.className = 'fas fa-cloud-download-alt';
-    icono.style.color = 'var(--acento-dorado)';
-    titulo.textContent = 'Reanudando descarga';
-    barra.style.background = 'linear-gradient(90deg, var(--acento-dorado), #a87f55)';
-    zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-secundario" onclick="cancelarDescargaLote()"><i class="fas fa-times"></i> Cancelar descarga</button>`;
-
-    let completados = desdeIndice;
-
-    for (let i = desdeIndice; i < checks.length; i++) {
-        if (descargaLoteCancelada) {
-            icono.className = 'fas fa-exclamation-triangle';
-            icono.style.color = 'var(--acento-rojo, #c0392b)';
-            titulo.textContent = 'Descarga interrumpida';
-            texto.textContent = `Se descargaron ${completados} de ${checks.length} documentos antes de cancelar. ¿Desea continuar con los documentos restantes?`;
-            barra.style.background = '#c0392b';
-
-            const restantes = checks.length - completados;
-            zonaBotones.innerHTML = `
-                <button type="button" class="boton-sagrado-secundario" onclick="cerrarModal('modal-descarga-lote'); toggleModoExportacion();">No, finalizar</button>
-                <button type="button" class="boton-sagrado-primario" onclick="reanudarDescargaLote(${completados})">
-                    <i class="fas fa-redo"></i> Continuar (${restantes} restante${restantes !== 1 ? 's' : ''})
-                </button>
-            `;
-            return;
-        }
-
-        let url = checks[i].getAttribute('data-url');
-        if(url.includes('generar_bautismo_pdf')) {
-            url += '&formato=' + formatoBautismo;
-        }
-
-        let link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', '');
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        completados++;
-        barra.style.width = Math.round((completados / checks.length) * 100) + '%';
-        contador.textContent = `${completados} de ${checks.length} documentos`;
-        texto.textContent = 'Si su navegador muestra un aviso de "Permitir varias descargas", acéptelo para continuar. Por favor espere.';
-
-        await new Promise(r => setTimeout(r, 2000));
-    }
-
-    if (!descargaLoteCancelada) {
-        icono.className = 'fas fa-check-circle';
-        icono.style.color = '#4caf50';
-        titulo.textContent = '¡Descarga completada!';
-        texto.textContent = `Se procesaron ${checks.length} documento${checks.length !== 1 ? 's' : ''} correctamente. Revise su carpeta de descargas.`;
-        zonaBotones.innerHTML = `<button type="button" class="boton-sagrado-primario" onclick="cerrarModal('modal-descarga-lote')">Entendido</button>`;
-
-        toggleModoExportacion();
-    }
-}
-
-/* ===== CONFIRMACIÓN DE CAMBIO DE PROPIO ROL ===== */
-const ID_USUARIO_ACTUAL = <?php echo $idUsuario; ?>;
-let rolNombres = { '1': 'Ciudadano', '2': 'Secretario', '3': 'Administrador' };
-
-function interceptarCambioRol(event) {
-    const userIdEditando = parseInt(document.getElementById('admin-edit-user-id').value);
-    const nuevoRol = document.getElementById('admin-edit-user-rol-hidden').value;
-
-    // Solo pedir confirmación si el admin está cambiando SU PROPIO rol
-    if (userIdEditando === ID_USUARIO_ACTUAL) {
-        event.preventDefault();
-
-        // Mostrar el nombre del nuevo rol en el modal
-        document.getElementById('texto-nuevo-rol').textContent = rolNombres[nuevoRol] || 'otro rol';
-        document.getElementById('pass-confirmar-cambio-rol').value = '';
-        document.getElementById('error-pass-cambio-rol').style.display = 'none';
-
-        cerrarModal('modal-admin-editar-usuario');
-        abrirModal('modal-confirmar-cambio-rol');
-        return false;
-    }
-    return true; // Para otros usuarios, enviar normalmente
-}
-
-function confirmarYEnviarCambioRol() {
-    const pass = document.getElementById('pass-confirmar-cambio-rol').value.trim();
-    const errorEl = document.getElementById('error-pass-cambio-rol');
-
-    if (!pass) {
-        errorEl.style.display = 'block';
-        document.getElementById('pass-confirmar-cambio-rol').focus();
-        return;
-    }
-    errorEl.style.display = 'none';
-
-    // Insertar la contraseña como campo oculto en el formulario y enviar
-    const form = document.getElementById('form-admin-editar-usuario');
-    let inputClave = form.querySelector('input[name="clave-admin-confirmar"]');
-    if (!inputClave) {
-        inputClave = document.createElement('input');
-        inputClave.type = 'hidden';
-        inputClave.name = 'clave-admin-confirmar';
-        form.appendChild(inputClave);
-    }
-    inputClave.value = pass;
-
-    cerrarModal('modal-confirmar-cambio-rol');
-    form.submit();
-}
-
-
-function seleccionarFormatoBautismo(li, valor, textoVisible) {
-    document.getElementById('formato-lote-bautismo').value = valor;
-    document.getElementById('formato-bautismo-texto').textContent = textoVisible;
-
-    // Cerrar el dropdown (mismo patrón que los demás selects de la app)
-    const opciones = li.closest('.select-opciones-catedral');
-    const contenedor = li.closest('.select-personalizado-catedral');
-    if (opciones) opciones.style.display = 'none';
-    if (contenedor) contenedor.classList.remove('abierto');
-
-    // Marcar el ítem seleccionado visualmente
-    li.closest('ul').querySelectorAll('li').forEach(item => item.classList.remove('seleccionado'));
-    li.classList.add('seleccionado');
-}
-
-function mostrarNotificacionToast(mensaje, tipo = 'info') {
-    let toast = document.getElementById('toast-app-temporal');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast-app-temporal';
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px; z-index: 99999;
-            background: var(--fondo-tarjeta, #fff); color: var(--texto-principal, #1a2238);
-            padding: 15px 22px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            border-left: 5px solid var(--acento-dorado); font-weight: 600; font-size: 0.92rem;
-            transform: translateX(130%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 320px;
-        `;
-        document.body.appendChild(toast);
-    }
-    toast.style.borderLeftColor = tipo === 'error' ? 'var(--acento-rojo, #c0392b)' : 'var(--acento-dorado)';
-    toast.textContent = mensaje;
-    requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
-    clearTimeout(toast._timeoutId);
-    toast._timeoutId = setTimeout(() => {
-        toast.style.transform = 'translateX(130%)';
-    }, 3500);
+    
+    toggleModoExportacion();
 }
 
 // Apagar el modo exportación si el usuario se sale de la carpeta
@@ -4275,169 +3575,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
-
-/* ===== PANEL LATERAL: ACTIVIDADES DE AGENDA POR MES ===== */
-const MESES_AGENDA_PANEL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const ICONOS_TIPO_AGENDA = {
-    'Boda': 'fas fa-rings-wedding',
-    'Bautizo': 'fas fa-water',
-    'Comunión': 'fas fa-bread-slice',
-    'Misa Especial': 'fas fa-church',
-    'Mantenimiento': 'fas fa-tools',
-};
-
-let agendaMesPanelActual = new Date().getMonth();
-let agendaAnioPanelActual = new Date().getFullYear();
-
-function togglePanelAgendaMes() {
-    const panel = document.getElementById('panel-agenda-mes');
-    if (!panel) return;
-    panel.classList.toggle('abierto');
-    if (panel.classList.contains('abierto')) {
-        renderPanelAgendaMes();
-    }
-}
-
-function panelAgendaMesAnterior() {
-    agendaMesPanelActual--;
-    if (agendaMesPanelActual < 0) { agendaMesPanelActual = 11; agendaAnioPanelActual--; }
-    renderPanelAgendaMes();
-}
-
-function panelAgendaMesSiguiente() {
-    agendaMesPanelActual++;
-    if (agendaMesPanelActual > 11) { agendaMesPanelActual = 0; agendaAnioPanelActual++; }
-    renderPanelAgendaMes();
-}
-
-function renderPanelAgendaMes() {
-    const lista = document.getElementById('lista-eventos-agenda-mes');
-    const label = document.getElementById('panel-agenda-mes-label');
-    if (!lista || !label) return;
-
-    label.textContent = MESES_AGENDA_PANEL[agendaMesPanelActual] + ' ' + agendaAnioPanelActual;
-    // Pequeño "pop" en el label al cambiar de mes
-    label.style.animation = 'none';
-    void label.offsetWidth;
-    label.style.animation = 'pulsoBotonVerMas 0.3s ease';
-
-    const eventosMes = (typeof eventosAgendaDB !== 'undefined' ? eventosAgendaDB : []).filter(ev => {
-        const f = new Date(ev.fecha_hora_inicio);
-        return f.getMonth() === agendaMesPanelActual && f.getFullYear() === agendaAnioPanelActual;
-    }).sort((a, b) => new Date(a.fecha_hora_inicio) - new Date(b.fecha_hora_inicio));
-
-    // Reiniciar animación de entrada del contenedor
-    lista.style.animation = 'none';
-    void lista.offsetWidth;
-    lista.style.animation = 'deslizarMesEntrada 0.3s ease';
-
-    if (eventosMes.length === 0) {
-        lista.innerHTML = `
-            <div style="text-align: center; padding: 30px; opacity: 0.6;">
-                <i class="far fa-calendar-times" style="font-size: 3rem; margin-bottom: 10px; display: block; color: var(--acento-dorado);"></i>
-                <p>No hay actividades registradas en ${MESES_AGENDA_PANEL[agendaMesPanelActual]}.</p>
-            </div>`;
-        return;
-    }
-
-    lista.innerHTML = eventosMes.map((ev, idx) => {
-        const fecha = new Date(ev.fecha_hora_inicio);
-        const dia = fecha.getDate();
-        const hora = fecha.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const tipo = ev.tipo_actividad || 'Otro';
-        const icono = ICONOS_TIPO_AGENDA[tipo] || 'fas fa-calendar-day';
-        const titulo = ev.titulo_actividad || 'Sin título';
-        const retardo = idx * 45;
-
-        return `
-            <div class="item-actividad" style="cursor: default; animation-delay: ${retardo}ms;">
-                <div class="actividad-resumen" style="cursor: default;">
-                    <div class="actividad-icono"><i class="${icono}"></i></div>
-                    <div class="actividad-info-corta">
-                        <span class="act-modulo">${titulo}</span>
-                        <span class="act-tiempo">${tipo} · Día ${dia} · ${hora}</span>
-                    </div>
-                </div>
-            </div>`;
-    }).join('');
-}
 </script>
-
-
-
-    <style>
-        /* === Animación de tarjetas al pulsar "Ver más" === */
-        @keyframes apareceVerMas {
-            from {
-                opacity: 0;
-                transform: translateY(18px) scale(0.97);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Pulso breve en el botón "Ver más" al hacer clic */
-        @keyframes pulsoBotonVerMas {
-            0%   { transform: scale(1); }
-            40%  { transform: scale(0.94); }
-            100% { transform: scale(1); }
-        }
-        .btn-vermas-clic {
-            animation: pulsoBotonVerMas 0.3s ease;
-        }
-
-        /* Mejora de hover en los botones "Ver más" (sagrado-secundario ya tiene transición base) */
-        #btn-cargar-mas-formacion,
-        #btn-cargar-mas-donaciones,
-        #btn-cargar-mas-actividad {
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                        box-shadow 0.25s ease,
-                        background 0.25s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #btn-cargar-mas-formacion:hover,
-        #btn-cargar-mas-donaciones:hover,
-        #btn-cargar-mas-actividad:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 18px rgba(198, 156, 109, 0.3);
-        }
-        #btn-cargar-mas-formacion i,
-        #btn-cargar-mas-donaciones i,
-        #btn-cargar-mas-actividad i {
-            transition: transform 0.3s ease;
-        }
-        #btn-cargar-mas-formacion:hover i,
-        #btn-cargar-mas-donaciones:hover i,
-        #btn-cargar-mas-actividad:hover i {
-            transform: translateY(2px);
-        }
-
-        /* === Transición de mes en el panel de Actividades de Agenda === */
-        @keyframes deslizarMesEntrada {
-            from {
-                opacity: 0;
-                transform: translateX(18px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        #lista-eventos-agenda-mes {
-            animation: deslizarMesEntrada 0.3s ease;
-        }
-        #lista-eventos-agenda-mes .item-actividad {
-            animation: deslizarMesEntrada 0.35s ease backwards;
-        }
-        #panel-agenda-mes-label {
-            display: inline-block;
-            transition: transform 0.2s ease;
-        }
-    </style>
 
 </body>
 </html>
